@@ -70,13 +70,13 @@ and handle a few common cases e.g.:
 
 * limiting the number of splits
 * including the separators in the results
-* removing (some) empty tokens
+* removing (some) empty fields
 
 But, because the API is squeezed into two overloaded parameters (the separator and the limit),
 achieving the desired effects can be tricky. For instance, while `String#split` removes empty
-trailing tokens (by default), it provides no way to remove *all* empty tokens. Likewise, the
+trailing fields (by default), it provides no way to remove *all* empty fields. Likewise, the
 cramped API means there's no way to combine e.g. a limit (positive integer) with the option
-to preserve empty tokens (negative integer).
+to preserve empty fields (negative integer).
 
 If `split` was being written from scratch, without the baggage of its legacy API,
 it's possible that some of these options would be made explicit rather than overloading
