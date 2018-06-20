@@ -64,7 +64,7 @@ describe 'split' do
       assert { result == ['foo', 'bar', 'baz', 'quux'] }
     end
 
-    it 'removes trailing embedded empty tokens' do
+    it 'removes embedded empty tokens' do
       string = 'foo:bar::baz:quux'
 
       result = s.split(string, ':')

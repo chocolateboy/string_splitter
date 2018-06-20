@@ -75,7 +75,7 @@ and handle a few common cases e.g.:
 But, because the API is squeezed into two overloaded parameters (the separator and the limit),
 achieving the desired effects can be tricky. For instance, while `String#split` removes empty
 trailing tokens (by default), it provides no way to remove *all* empty tokens. Likewise, the
-cramped API means there's no way to combine e.g. a limit (positive integer) with an instruction
+cramped API means there's no way to combine e.g. a limit (positive integer) with the option
 to preserve empty tokens (negative integer).
 
 If `split` was being written from scratch, without the baggage of its legacy API,
@@ -87,8 +87,8 @@ the `limit` parameter. And, indeed, this is possible in some implementations, e.
 ":foo:bar:baz:".split(":", remove_empty: true)  # => ["foo", "bar", "baz"]
 ````
 
-StringSplitter takes this one step further by moving the configuration out of the method
-altogether and delegating the strategy of which splits it should accept or reject to a block:
+StringSplitter takes this one step further by moving the configuration out of the method altogether
+and delegating the strategy — i.e. which splits should be accepted or rejected — to a block:
 
 ```ruby
 ss = StringSplitter.new
@@ -126,7 +126,7 @@ date (columns 6-8) i.e.:
 
 ```ruby
 line = "-rw-r--r-- 1 user users   87 Jun 18 18:16 CHANGELOG.md"
-split(line)
+line.split
 ```
 
 gives:
