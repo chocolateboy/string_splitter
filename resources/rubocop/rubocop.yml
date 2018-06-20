@@ -1,0 +1,19 @@
+# project-specific customizations and overrides
+
+inherit_from: default.yml
+
+Naming/UncommunicativeMethodParamName:
+  Enabled: false
+
+Style/BracesAroundHashParameters:
+  Enabled: False
+
+Style/HashSyntax:
+  Enabled: false
+
+Style/NumericPredicate:
+  Enabled: false
+
+Style/WordArray:
+  Exclude:
+    - 'test/**/*.*'
