@@ -19,8 +19,7 @@ Gem::Specification.new do |spec|
   # spec.required_ruby_version = '>= 2.3.0'
 
   spec.metadata = {
-    # 'allowed_push_host' => 'https://rubygems.org',
-    'allowed_push_host' => '',
+    'allowed_push_host' => 'https://rubygems.org',
     'bug_tracker_uri'   => 'https://github.com/chocolateboy/string_splitter/issues',
     'changelog_uri'     => 'https://github.com/chocolateboy/string_splitter/blob/master/CHANGELOG.md',
     'source_code_uri'   => 'https://github.com/chocolateboy/string_splitter',
