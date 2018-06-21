@@ -49,12 +49,12 @@ ss.split("foo:bar:baz:quux", ":", at: 1)
 ss.rsplit("foo:bar:baz:quux", ":", at: 1)
 # => ["foo:bar:baz", "quux"]
 
-# split on a multiple indices
+# split on multiple separator indices
 line = "-rw-r--r-- 1 user users   87 Jun 18 18:16 CHANGELOG.md"
 ss.split(line, at: [1..5, 8])
 # => ["-rw-r--r--", "1", "user", "users", "87", "Jun 18 18:16", "CHANGELOG.md"]
 
-# fine-grained control via a block
+# full control via a block
 ss.split("foo:bar:baz-baz", /[:-]/) do |i, split|
   split.rhs == "baz" && strip.separator == "-"
 end
@@ -80,7 +80,8 @@ to preserve empty fields (negative integer).
 
 If `split` was being written from scratch, without the baggage of its legacy API,
 it's possible that some of these options would be made explicit rather than overloading
-the `limit` parameter. And, indeed, this is possible in some implementations, e.g. in Crystal:
+the `limit` parameter. And, indeed, this is possible in some implementations,
+e.g. in Crystal:
 
 ```ruby
 ":foo:bar:baz:".split(":", remove_empty: false) # => ["", "foo", "bar", "baz", ""]
@@ -97,7 +98,8 @@ ss.split("foo:bar:baz", ":")  { |i| i == 1 } # => ["foo", "bar:baz"]
 ss.rsplit("foo:bar:baz", ":") { |i| i == 1 } # => ["foo:bar", "baz"]
 ```
 
-As a shortcut, the common case of splitting at one or more indices can be specified via an option:
+As a shortcut, the common case of splitting on separators at one or more indices can be specified
+via an option:
 
 ```ruby
 ss.split('foo:bar:baz:quux', ':', at: [1, 3]) # => ["foo", "bar:baz", "quux"]
@@ -107,9 +109,8 @@ ss.split('foo:bar:baz:quux', ':', at: [1, 3]) # => ["foo", "bar:baz", "quux"]
 
 I wanted to split semi-structured output into fields without having to resort to a regex or a full-blown parser.
 
-As an example, the nominally unstructured/human-friendly output of many Unix commands is, in practice,
-*almost* structured. It's often tantalizingly close to being space-separated, apart from a few pesky
-exceptions e.g.:
+As an example, the nominally unstructured output of many Unix commands is, in practice, often formatted in a way
+that's tantalizingly close to being machine-readable apart from a few pesky exceptions e.g.:
 
 ```bash
 $ ls -la
@@ -157,9 +158,8 @@ this easy to handle, either via a block:
 
 ```ruby
 ss.split(line) do |i|
-    case i when 1..5, 8 then true end
+  case i when 1..5, 8 then true end
 end
-
 # => ["-rw-r--r--", "1", "user", "users", "87", "Jun 18 18:16", "CHANGELOG.md"]
 ```
 
@@ -167,7 +167,6 @@ Or via its option shortcut:
 
 ```ruby
 ss.split(line, at: [1..5, 8])
-
 # => ["-rw-r--r--", "1", "user", "users", "87", "Jun 18 18:16", "CHANGELOG.md"]
 ```
 
