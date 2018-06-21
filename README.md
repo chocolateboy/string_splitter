@@ -80,7 +80,7 @@ to preserve empty fields (negative integer).
 
 If `split` was being written from scratch, without the baggage of its legacy API,
 it's possible that some of these options would be made explicit rather than overloading
-the `limit` parameter. And, indeed, this is possible in some implementations,
+the parameters. And, indeed, this is possible in some implementations,
 e.g. in Crystal:
 
 ```ruby
@@ -109,8 +109,8 @@ ss.split('foo:bar:baz:quux', ':', at: [1, 3]) # => ["foo", "bar:baz", "quux"]
 
 I wanted to split semi-structured output into fields without having to resort to a regex or a full-blown parser.
 
-As an example, the nominally unstructured output of many Unix commands is, in practice, often formatted in a way
-that's tantalizingly close to being machine-readable apart from a few pesky exceptions e.g.:
+As an example, the nominally unstructured output of many Unix commands is often, in practice, formatted in a way
+that's tantalizingly close to being machine-readable, apart from a few pesky exceptions e.g.:
 
 ```bash
 $ ls -la
