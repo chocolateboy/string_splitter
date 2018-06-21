@@ -7,23 +7,31 @@ require 'values'
 #   - providing full control over which splits are accepted or rejected
 #   - adding support for splitting from right-to-left
 #   - encapsulating splitting options/preferences in instances rather than trying to
-#     cram them in to overloaded method parameters
+#     cram them into overloaded method parameters
 #
 # These enhancements allow splits to handle many cases that otherwise require bigger
 # guns e.g. regex matching or parsing.
 class StringSplitter
   ACCEPT = ->(_index, _split) { true }
+  DEFAULT_SEPARATOR = /\s+/
 
   Split = Value.new(:captures, :lhs, :rhs, :separator)
 
-  # TODO: add default_separator
-  def initialize(include_captures: true, remove_empty: false, spread_captures: true)
+  def initialize(
+    default_separator: DEFAULT_SEPARATOR,
+    include_captures: true,
+    remove_empty: false,
+    spread_captures: true
+  )
+    @default_separator = default_separator
     @include_captures = include_captures
     @remove_empty = remove_empty
     @spread_captures = spread_captures
   end
 
-  def split(string, delimiter = /\s+/, at: nil, &block)
+  attr_reader :default_separator, :include_captures, :remove_empty, :spread_captures
+
+  def split(string, delimiter = @default_separator, at: nil, &block)
     result, block, iterator, index = split_common(string, delimiter, at, block, :forward)
 
     return result unless iterator
@@ -59,7 +67,7 @@ class StringSplitter
 
   alias lsplit split
 
-  def rsplit(string, delimiter = /\s+/, at: nil, &block)
+  def rsplit(string, delimiter = @default_separator, at: nil, &block)
     result, block, iterator, index = split_common(string, delimiter, at, block, :reverse)
 
     return result unless iterator
@@ -96,8 +104,6 @@ class StringSplitter
   private
 
   def forward_iterator(parts, ncaptures)
-    parts = parts.dup
-
     Enumerator.new do |yielder|
       until parts.empty?
         lhs = parts.shift
@@ -116,8 +122,6 @@ class StringSplitter
   end
 
   def reverse_iterator(parts, ncaptures)
-    parts = parts.dup
-
     Enumerator.new do |yielder|
       until parts.empty?
         rhs = parts.pop
