@@ -148,12 +148,22 @@ line.match(/^(\S+) \s+ (\d+) \s+ (\S+) \s+ (\S+) \s+ (\d+) \s+ (\S+ \s+ \d+ \s+ 
 ```
 
 But that requires us to specify *everything*. What we really want is a version of `split`
-that we can disable for the 6th and 7th columns i.e. manual control over which splits
-are accepted, rather than being restricted to the single, baked-in strategy supported by
-the `limit` parameter.
+which allows us to veto splitting for the 6th and 7th separators i.e. control over which
+splits are accepted, rather than being restricted to the single, baked-in strategy provided
+by the `limit` parameter.
 
-StringSplitter makes it easy to create your own splitting strategies to both emulate and
-enhance existing behaviors and create new ones e.g., in this case:
+By providing a simple way to accept or reject each split, StringSplitter makes cases like
+this easy to handle, either via a block:
+
+```ruby
+ss.split(line) do |i|
+    case i when 1..5, 8 then true end
+end
+
+# => ["-rw-r--r--", "1", "user", "users", "87", "Jun 18 18:16", "CHANGELOG.md"]
+```
+
+Or via its option shortcut:
 
 ```ruby
 ss.split(line, at: [1..5, 8])
