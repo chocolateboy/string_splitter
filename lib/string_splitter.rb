@@ -12,10 +12,11 @@ require 'values'
 # These enhancements allow splits to handle many cases that otherwise require bigger
 # guns e.g. regex matching or parsing.
 class StringSplitter
-  ACCEPT = ->(_index, _split) { true }
+  ACCEPT = ->(_split) { true }
   DEFAULT_SEPARATOR = /\s+/
+  NO_SPLITS = []
 
-  Split = Value.new(:captures, :lhs, :rhs, :separator)
+  Split = Value.new(:captures, :count, :index, :lhs, :rhs, :separator)
 
   def initialize(
     default_separator: DEFAULT_SEPARATOR,
@@ -32,21 +33,13 @@ class StringSplitter
   attr_reader :default_separator, :include_captures, :remove_empty, :spread_captures
 
   def split(string, delimiter = @default_separator, at: nil, &block)
-    result, block, iterator, index = split_common(string, delimiter, at, block, :forward)
+    result, block, splits, count, index = split_common(string, delimiter, at, block)
 
-    return result unless iterator
+    splits.each do |split|
+      split = Split.with(split.merge({ index: (index += 1), count: count }))
+      result << split.lhs if result.empty?
 
-    iterator.each do |split|
-      next if @remove_empty && split.rhs.empty?
-
-      if result.empty?
-        next if @remove_empty && split.lhs.empty?
-        result << split.lhs
-      end
-
-      index += 1
-
-      if block.call(index, split)
+      if block.call(split)
         if @include_captures
           if @spread_captures
             result += split.captures
@@ -68,21 +61,13 @@ class StringSplitter
   alias lsplit split
 
   def rsplit(string, delimiter = @default_separator, at: nil, &block)
-    result, block, iterator, index = split_common(string, delimiter, at, block, :reverse)
+    result, block, splits, count, index = split_common(string, delimiter, at, block)
 
-    return result unless iterator
+    splits.reverse!.each do |split|
+      split = Split.with(split.merge({ index: (index += 1), count: count }))
+      result.unshift(split.rhs) if result.empty?
 
-    iterator.each do |split|
-      next if @remove_empty && split.lhs.empty?
-
-      if result.empty?
-        next if @remove_empty && split.rhs.empty?
-        result.unshift(split.rhs)
-      end
-
-      index += 1
-
-      if block.call(index, split)
+      if block.call(split)
         if @include_captures
           if @spread_captures
             result = split.captures + result
@@ -103,57 +88,45 @@ class StringSplitter
 
   private
 
-  def forward_iterator(parts, ncaptures)
-    Enumerator.new do |yielder|
-      until parts.empty?
-        lhs = parts.shift
-        separator = parts.shift
-        captures = parts.shift(ncaptures)
-        rhs = parts.length == 1 ? parts.shift : parts.first
+  def splits_for(parts, ncaptures)
+    result = []
+    splits = []
 
-        yielder << Split.with({
-          lhs: lhs,
-          rhs: rhs,
-          separator: separator,
-          captures: captures,
-        })
+    until parts.empty?
+      lhs = parts.shift
+      separator = parts.shift
+      captures = parts.shift(ncaptures)
+      rhs = parts.length == 1 ? parts.shift : parts.first
+
+      if @remove_empty && (lhs.empty? || rhs.empty?)
+        if lhs.empty? && rhs.empty?
+          # do nothing
+        elsif parts.empty? # last split
+          result << (!lhs.empty? ? lhs : rhs) if splits.empty?
+        elsif !lhs.empty?
+          # replace the empty rhs with the non-empty lhs
+          parts[0] = lhs
+        end
+
+        next
       end
-    end
-  end
 
-  def reverse_iterator(parts, ncaptures)
-    Enumerator.new do |yielder|
-      until parts.empty?
-        rhs = parts.pop
-        captures = parts.pop(ncaptures)
-        separator = parts.pop
-        lhs = parts.length == 1 ? parts.pop : parts.last
-
-        yielder << Split.with({
-          lhs: lhs,
-          rhs: rhs,
-          separator: separator,
-          captures: captures,
-        })
-      end
+      splits << {
+        lhs: lhs,
+        rhs: rhs,
+        separator: separator,
+        captures: captures,
+      }
     end
+
+    [result, splits]
   end
 
   # setup common to both split methods
-  def split_common(string, delimiter, at, block, type)
+  def split_common(string, delimiter, at, block)
     unless (match = string.match(delimiter))
       result = (@remove_empty && string.empty?) ? [] : [string]
-      return [result]
-    end
-
-    unless block
-      if at
-        block = lambda do |index, _split|
-          case index when *at then true else false end
-        end
-      else
-        block = ACCEPT
-      end
+      return [result, block, NO_SPLITS, 0, 0]
     end
 
     ncaptures = match.captures.length
@@ -182,7 +155,43 @@ class StringSplitter
     end
 
     parts = string.split(/(#{delimiter})/, -1)
-    iterator = method("#{type}_iterator".to_sym).call(parts, ncaptures)
-    [[], block, iterator, 0]
+    result, splits = splits_for(parts, ncaptures)
+    count = splits.length
+
+    unless block
+      if at
+        at = Array(at).map do |index|
+          if index.is_a?(Integer) && index.negative?
+            # translate 1-based negative indices to 1-based positive
+            # indices e.g:
+            #
+            #   ss.split("foo:bar:baz:quux", ":", at: -1)
+            #
+            # translates to:
+            #
+            #   ss.split("foo:bar:baz:quux", ":", at: 3)
+            #
+            # XXX note: we don't use modulo, because we don't want
+            # out-of-bounds indices to silently work e.g. we don't want:
+            #
+            #   ss.split("foo:bar:baz:quux", ":", -42)
+            #
+            # to mysteriously match when the index is 2
+
+            count + 1 + index
+          else
+            index
+          end
+        end
+
+        block = lambda do |split|
+          case split.index when *at then true else false end
+        end
+      else
+        block = ACCEPT
+      end
+    end
+
+    [result, block, splits, count, 0]
   end
 end

@@ -46,7 +46,7 @@ ss.split("foo:bar:baz:quux", ":", at: 1)
 # => ["foo", "bar:baz:quux"]
 
 # split on the last separator
-ss.rsplit("foo:bar:baz:quux", ":", at: 1)
+ss.split("foo:bar:baz:quux", ":", at: -1)
 # => ["foo:bar:baz", "quux"]
 
 # split on multiple separator indices
@@ -55,7 +55,7 @@ ss.split(line, at: [1..5, 8])
 # => ["-rw-r--r--", "1", "user", "users", "87", "Jun 18 18:16", "CHANGELOG.md"]
 
 # full control via a block
-ss.split("foo:bar:baz-baz", /[:-]/) do |i, split|
+ss.split("foo:bar:baz-baz", /[:-]/) do |split|
   split.rhs == "baz" && strip.separator == "-"
 end
 # => ["foo:bar:baz", "baz"]
@@ -94,15 +94,18 @@ and delegating the strategy — i.e. which splits should be accepted or rejected
 ```ruby
 ss = StringSplitter.new
 
-ss.split("foo:bar:baz", ":")  { |i| i == 1 } # => ["foo", "bar:baz"]
-ss.rsplit("foo:bar:baz", ":") { |i| i == 1 } # => ["foo:bar", "baz"]
+ss.split("foo:bar:baz", ":") { |split| split.index == 1 }
+# => ["foo", "bar:baz"]
+
+ss.rsplit("foo:bar:baz", ":") { |split| split.index == split.count }
+# => ["foo:bar", "baz"]
 ```
 
 As a shortcut, the common case of splitting on separators at one or more indices can be specified
 via an option:
 
 ```ruby
-ss.split('foo:bar:baz:quux', ':', at: [1, 3]) # => ["foo", "bar:baz", "quux"]
+ss.split('foo:bar:baz:quux', ':', at: [1, -1]) # => ["foo", "bar:baz", "quux"]
 ```
 
 # WHY?
@@ -157,8 +160,8 @@ By providing a simple way to accept or reject each split, StringSplitter makes c
 this easy to handle, either via a block:
 
 ```ruby
-ss.split(line) do |i|
-  case i when 1..5, 8 then true end
+ss.split(line) do |split|
+  case split.index when 1..5, 8 then true end
 end
 # => ["-rw-r--r--", "1", "user", "users", "87", "Jun 18 18:16", "CHANGELOG.md"]
 ```

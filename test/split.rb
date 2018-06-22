@@ -14,12 +14,12 @@ describe 'split' do
     end
 
     specify 'limit: 2' do
-      result = s.split(STRING, ':') { |i| i == 1 }
+      result = s.split(STRING, ':') { |split| split.index == 1 }
       assert { result == ['foo', 'bar:baz:quux'] }
     end
 
     specify 'limit: 3' do
-      result = s.split(STRING, ':') { |i| i < 3 }
+      result = s.split(STRING, ':') { |split| split.index < 3 }
       assert { result == ['foo', 'bar', 'baz:quux'] }
     end
 
@@ -35,8 +35,13 @@ describe 'split' do
       assert { result == ['foo:bar', 'baz:quux'] }
     end
 
-    specify 'at: [1, 3]' do
-      result = s.split(STRING, ':', at: [1, 3])
+    specify 'at: -1' do
+      result = s.split(STRING, ':', at: -1)
+      assert { result == ['foo:bar:baz', 'quux'] }
+    end
+
+    specify 'at: [1, -1]' do
+      result = s.split(STRING, ':', at: [1, -1])
       assert { result == ['foo', 'bar:baz', 'quux'] }
     end
   end
