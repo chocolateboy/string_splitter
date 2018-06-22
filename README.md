@@ -51,7 +51,7 @@ ss.split("foo:bar:baz:quux", ":", at: 1)
 ss.split("foo:bar:baz:quux", ":", at: -1)
 # => ["foo:bar:baz", "quux"]
 
-# split on multiple separator indices
+# split at multiple separator positions
 ss.split("1:2:3:4:5:6:7:8:9", ":", at: [1..3, -2])
 # => ["1", "2", "3", "4:5:6:7", "8:9"]
 
@@ -61,7 +61,7 @@ ss.rsplit("1:2:3:4:5:6:7:8:9", ":", at: [1..3, 5])
 
 # full control via a block
 result = ss.split('a:a:a:b:c:c:e:a:a:d:c', ":") do |split|
-  split.index > 1 && split.lhs == split.rhs
+  split.index > 0 && split.lhs == split.rhs
 end
 # => ["a:a", "a:b:c", "c:e:a", "a:d:c"]
 ```
@@ -99,10 +99,10 @@ and delegating the strategy — i.e. which splits should be accepted or rejected
 ```ruby
 ss = StringSplitter.new
 
-ss.split("foo:bar:baz", ":") { |split| split.index == 1 }
+ss.split("foo:bar:baz", ":") { |split| split.index == 0 }
 # => ["foo", "bar:baz"]
 
-ss.split("foo:bar:baz", ":") { |split| split.index == split.count }
+ss.split("foo:bar:baz", ":") { |split| split.position == split.count }
 # => ["foo:bar", "baz"]
 ```
 
@@ -165,7 +165,7 @@ this easy to handle, either via a block:
 
 ```ruby
 ss.split(line) do |split|
-  case split.index when 1..5, 8 then true end
+  case split.position when 1..5, 8 then true end
 end
 # => ["-rw-r--r--", "1", "user", "users", "87", "Jun 18 18:16", "CHANGELOG.md"]
 ```

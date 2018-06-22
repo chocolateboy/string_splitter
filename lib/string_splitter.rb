@@ -16,7 +16,14 @@ class StringSplitter
   DEFAULT_SEPARATOR = /\s+/
   NO_SPLITS = []
 
-  Split = Value.new(:captures, :count, :index, :lhs, :rhs, :separator)
+  Split = Value.new(:captures, :count, :index, :lhs, :rhs, :separator) do
+    def position
+      index + 1
+    end
+
+    alias_method :offset, :index
+    alias_method :pos, :position
+  end
 
   def initialize(
     default_separator: DEFAULT_SEPARATOR,
@@ -126,7 +133,7 @@ class StringSplitter
   def split_common(string, delimiter, at, block)
     unless (match = string.match(delimiter))
       result = (@remove_empty && string.empty?) ? [] : [string]
-      return [result, block, NO_SPLITS, 0, 0]
+      return [result, block, NO_SPLITS, 0, -1]
     end
 
     ncaptures = match.captures.length
@@ -185,13 +192,13 @@ class StringSplitter
         end
 
         block = lambda do |split|
-          case split.index when *at then true else false end
+          case split.position when *at then true else false end
         end
       else
         block = ACCEPT
       end
     end
 
-    [result, block, splits, count, 0]
+    [result, block, splits, count, -1]
   end
 end

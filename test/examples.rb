@@ -26,7 +26,7 @@ describe 'examples' do
     assert { result == ['foo:bar:baz', 'quux'] }
   end
 
-  specify 'split on multiple separator indices' do
+  specify 'split at multiple separator positions' do
     result = s.split('1:2:3:4:5:6:7:8:9', ':', at: [1..3, -2])
     assert { result == ['1', '2', '3', '4:5:6:7', '8:9'] }
   end
@@ -38,17 +38,17 @@ describe 'examples' do
 
   specify 'full control via a block' do
     result = s.split('a:a:a:b:c:c:e:a:a:d:c', ':') do |split|
-      split.index > 1 && split.lhs == split.rhs
+      split.index > 0 && split.lhs == split.rhs
     end
 
     assert { result == ['a:a', 'a:b:c', 'c:e:a', 'a:d:c'] }
   end
 
   specify 'implement the `at` option manually' do
-    result = s.split('foo:bar:baz', ':') { |split| split.index == 1 }
+    result = s.split('foo:bar:baz', ':') { |split| split.index == 0 }
     assert { result == ['foo', 'bar:baz'] }
 
-    result = s.split('foo:bar:baz', ':') { |split| split.index == split.count }
+    result = s.split('foo:bar:baz', ':') { |split| split.position == split.count }
     assert { result == ['foo:bar', 'baz'] }
   end
 
@@ -58,7 +58,7 @@ describe 'examples' do
     match = line.match(/^(\S+) \s+ (\d+) \s+ (\S+) \s+ (\S+) \s+ (\d+) \s+ (\S+ \s+ \d+ \s+ \S+) \s+ (.+)$/x)
 
     result = s.split(line) do |split|
-      case split.index when 1..5, 8 then true end
+      case split.position when 1..5, 8 then true end
     end
 
     assert { match.captures == want }

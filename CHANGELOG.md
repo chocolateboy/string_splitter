@@ -1,7 +1,12 @@
+## 0.2.0 - TBD
+
+- **breaking change**: make `index` (AKA `offset`) 0-based and add `position` (AKA `pos`)
+  as the 1-based accessor
+
 ## 0.1.0 - 2018-06-22
 
-- **breaking change**: the block now takes a single `split` object with an `index`
-  accessor, rather than seperate `index` and `split` arguments
+- **breaking change**: the block now takes a single `split` object with an
+  `index` accessor, rather than seperate `index` and `split` arguments
 - add support for negative indices in the value supplied to the `at` option
 - add a `count` field to the split object containing the total number of splits
 

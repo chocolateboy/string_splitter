@@ -14,12 +14,12 @@ describe 'split' do
     end
 
     specify 'limit: 2' do
-      result = s.split(STRING, ':') { |split| split.index == 1 }
+      result = s.split(STRING, ':') { |split| split.pos == 1 }
       assert { result == ['foo', 'bar:baz:quux'] }
     end
 
     specify 'limit: 3' do
-      result = s.split(STRING, ':') { |split| split.index < 3 }
+      result = s.split(STRING, ':') { |split| split.pos < 3 }
       assert { result == ['foo', 'bar', 'baz:quux'] }
     end
 
@@ -29,7 +29,7 @@ describe 'split' do
     end
   end
 
-  describe 'indices' do
+  describe 'positions' do
     specify 'at: 2' do
       result = s.split(STRING, ':', at: 2)
       assert { result == ['foo:bar', 'baz:quux'] }
@@ -43,50 +43,6 @@ describe 'split' do
     specify 'at: [1, -1]' do
       result = s.split(STRING, ':', at: [1, -1])
       assert { result == ['foo', 'bar:baz', 'quux'] }
-    end
-  end
-
-  describe 'remove_empty' do
-    ss = StringSplitter.new(remove_empty: true)
-
-    it 'removes leading empty tokens' do
-      string = ':foo:bar:baz:quux'
-
-      result = s.split(string, ':')
-      assert { result == ['', 'foo', 'bar', 'baz', 'quux'] }
-
-      result = ss.split(string, ':') { true }
-      assert { result == ['foo', 'bar', 'baz', 'quux'] }
-    end
-
-    it 'removes trailing empty tokens' do
-      string = 'foo:bar:baz:quux:'
-
-      result = s.split(string, ':') { true }
-      assert { result == ['foo', 'bar', 'baz', 'quux', ''] }
-
-      result = ss.split(string, ':') { true }
-      assert { result == ['foo', 'bar', 'baz', 'quux'] }
-    end
-
-    it 'removes embedded empty tokens' do
-      string = 'foo:bar::baz:quux'
-
-      result = s.split(string, ':')
-      assert { result == ['foo', 'bar', '', 'baz', 'quux'] }
-
-      result = ss.split(string, ':')
-      assert { result == ['foo', 'bar', 'baz', 'quux'] }
-    end
-
-    it 'removes all empty tokens' do
-      string = ':foo:bar::baz:quux:'
-
-      result = s.split(string, ':')
-      assert { result == ['', 'foo', 'bar', '', 'baz', 'quux', ''] }
-
-      result = ss.split(string, ':')
-      assert { result == ['foo', 'bar', 'baz', 'quux'] }
     end
   end
 end
