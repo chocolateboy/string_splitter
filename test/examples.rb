@@ -4,7 +4,7 @@ require_relative 'test_helper'
 
 # ensure the examples in the README work
 
-describe 'synopsis' do
+describe 'examples' do
   s = StringSplitter.new
 
   specify 'same as String#split' do
@@ -44,7 +44,7 @@ describe 'synopsis' do
     assert { result == ['a:a', 'a:b:c', 'c:e:a', 'a:d:c'] }
   end
 
-  specify 'block' do
+  specify 'implement the `at` option manually' do
     result = s.split('foo:bar:baz', ':') { |split| split.index == 1 }
     assert { result == ['foo', 'bar:baz'] }
 
@@ -52,7 +52,7 @@ describe 'synopsis' do
     assert { result == ['foo:bar', 'baz'] }
   end
 
-  specify 'semi-structured' do
+  specify 'semi-structured input' do
     line = '-rw-r--r-- 1 user users   87 Jun 18 18:16 CHANGELOG.md'
     want = ['-rw-r--r--', '1', 'user', 'users', '87', 'Jun 18 18:16', 'CHANGELOG.md']
 

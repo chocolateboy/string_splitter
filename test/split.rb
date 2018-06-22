@@ -7,7 +7,7 @@ STRING = 'foo:bar:baz:quux'
 describe 'split' do
   s = StringSplitter.new # remove_empty: false
 
-  describe 'limit' do
+  describe 'emulate limit' do
     specify 'limit: 1' do
       result = s.split(STRING, ':') { false }
       assert { result == ['foo:bar:baz:quux'] }
