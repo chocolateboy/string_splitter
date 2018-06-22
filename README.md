@@ -39,6 +39,8 @@ ss = StringSplitter.new
 
 # same as String#split
 ss.split("foo bar baz quux")
+ss.split("foo bar baz quux", " ")
+ss.split("foo bar baz quux", /\s+/)
 # => ["foo", "bar", "baz", "quux"]
 
 # split on the first separator
@@ -50,16 +52,18 @@ ss.split("foo:bar:baz:quux", ":", at: -1)
 # => ["foo:bar:baz", "quux"]
 
 # split on multiple separator indices
-line = "-rw-r--r-- 1 user users   87 Jun 18 18:16 CHANGELOG.md"
-ss.split(line, at: [1..5, 8])
-# => ["-rw-r--r--", "1", "user", "users", "87", "Jun 18 18:16", "CHANGELOG.md"]
+ss.split("1:2:3:4:5:6:7:8:9", ":", at: [1..3, -1])
+# => ["1", "2", "3", "4:5:6:7:8", "9"]
+
+# split from the right
+ss.rsplit("1:2:3:4:5:6:7:8:9", ":", at: [1..3, 5])
+# => ["1:2:3:4", "5:6", "7", "8", "9"]
 
 # full control via a block
-ss.split("foo:bar:baz-baz", /[:-]/) do |split|
-  split.rhs == "baz" && strip.separator == "-"
+result = s.split('a:a:a:b:c:c:e:a:a:d:c', ":") do |split|
+  split.index > 1 && split.lhs == split.rhs
 end
-# => ["foo:bar:baz", "baz"]
-
+# => ["a:a", "a:b:c", "c:e:a", "a:d:c"]
 ```
 
 # DESCRIPTION
@@ -97,12 +101,11 @@ ss = StringSplitter.new
 ss.split("foo:bar:baz", ":") { |split| split.index == 1 }
 # => ["foo", "bar:baz"]
 
-ss.rsplit("foo:bar:baz", ":") { |split| split.index == split.count }
+ss.split("foo:bar:baz", ":") { |split| split.index == split.count }
 # => ["foo:bar", "baz"]
 ```
 
-As a shortcut, the common case of splitting on separators at one or more indices can be specified
-via an option:
+As a shortcut, the common case of splitting on separators at one or more indices is supported by an option:
 
 ```ruby
 ss.split('foo:bar:baz:quux', ':', at: [1, -1]) # => ["foo", "bar:baz", "quux"]
