@@ -13,7 +13,7 @@ require 'values'
 # guns e.g. regex matching or parsing.
 class StringSplitter
   ACCEPT = ->(_split) { true }
-  DEFAULT_SEPARATOR = /\s+/
+  DEFAULT_DELIMITER = /\s+/
   NO_SPLITS = []
 
   Split = Value.new(:captures, :count, :index, :lhs, :rhs, :separator) do
@@ -26,20 +26,20 @@ class StringSplitter
   end
 
   def initialize(
-    default_separator: DEFAULT_SEPARATOR,
+    default_delimiter: DEFAULT_DELIMITER,
     include_captures: true,
     remove_empty: false,
     spread_captures: true
   )
-    @default_separator = default_separator
+    @default_delimiter = default_delimiter
     @include_captures = include_captures
     @remove_empty = remove_empty
     @spread_captures = spread_captures
   end
 
-  attr_reader :default_separator, :include_captures, :remove_empty, :spread_captures
+  attr_reader :default_delimiter, :include_captures, :remove_empty, :spread_captures
 
-  def split(string, delimiter = @default_separator, at: nil, &block)
+  def split(string, delimiter = @default_delimiter, at: nil, &block)
     result, block, splits, count, index = split_common(string, delimiter, at, block)
 
     splits.each do |split|
@@ -67,7 +67,7 @@ class StringSplitter
 
   alias lsplit split
 
-  def rsplit(string, delimiter = @default_separator, at: nil, &block)
+  def rsplit(string, delimiter = @default_delimiter, at: nil, &block)
     result, block, splits, count, index = split_common(string, delimiter, at, block)
 
     splits.reverse!.each do |split|
@@ -110,7 +110,7 @@ class StringSplitter
           # do nothing
         elsif parts.empty? # last split
           result << (!lhs.empty? ? lhs : rhs) if splits.empty?
-        elsif !lhs.empty?
+        elsif rhs.empty?
           # replace the empty rhs with the non-empty lhs
           parts[0] = lhs
         end

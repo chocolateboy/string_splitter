@@ -43,15 +43,15 @@ ss.split("foo bar baz quux", " ")
 ss.split("foo bar baz quux", /\s+/)
 # => ["foo", "bar", "baz", "quux"]
 
-# split on the first separator
+# split at the first delimiter
 ss.split("foo:bar:baz:quux", ":", at: 1)
 # => ["foo", "bar:baz:quux"]
 
-# split on the last separator
+# split at the last delimiter
 ss.split("foo:bar:baz:quux", ":", at: -1)
 # => ["foo:bar:baz", "quux"]
 
-# split at multiple separator positions
+# split at multiple delimiter positions
 ss.split("1:2:3:4:5:6:7:8:9", ":", at: [1..3, -2])
 # => ["1", "2", "3", "4:5:6:7", "8:9"]
 
@@ -76,11 +76,11 @@ and handle a few common cases e.g.:
 * including the separators in the results
 * removing (some) empty fields
 
-But, because the API is squeezed into two overloaded parameters (the separator and the limit),
+But, because the API is squeezed into two overloaded parameters (the delimiter and the limit),
 achieving the desired effects can be tricky. For instance, while `String#split` removes empty
 trailing fields (by default), it provides no way to remove *all* empty fields. Likewise, the
 cramped API means there's no way to e.g. combine a limit (positive integer) with the option
-to preserve empty fields (negative integer), or use backreferences in a separator pattern
+to preserve empty fields (negative integer), or use backreferences in a delimiter pattern
 without including its captured subexpressions in the result.
 
 If `split` was being written from scratch, without the baggage of its legacy API,
@@ -106,7 +106,7 @@ ss.split("foo:bar:baz", ":") { |split| split.position == split.count }
 # => ["foo:bar", "baz"]
 ```
 
-As a shortcut, the common case of splitting on separators at one or more positions is supported by an option:
+As a shortcut, the common case of splitting on delimiters at one or more positions is supported by an option:
 
 ```ruby
 ss.split('foo:bar:baz:quux', ':', at: [1, -1]) # => ["foo", "bar:baz", "quux"]
@@ -116,7 +116,7 @@ ss.split('foo:bar:baz:quux', ':', at: [1, -1]) # => ["foo", "bar:baz", "quux"]
 
 I wanted to split semi-structured output into fields without having to resort to a regex or a full-blown parser.
 
-As an example, the nominally unstructured output of many Unix commands is often, in practice, formatted in a way
+As an example, the nominally unstructured output of many Unix commands is often formatted in a way
 that's tantalizingly close to being machine-readable, apart from a few pesky exceptions e.g.:
 
 ```bash
@@ -156,7 +156,7 @@ line.match(/^(\S+) \s+ (\d+) \s+ (\S+) \s+ (\S+) \s+ (\d+) \s+ (\S+ \s+ \d+ \s+ 
 ```
 
 But that requires us to specify *everything*. What we really want is a version of `split`
-which allows us to veto splitting for the 6th and 7th separators i.e. control over which
+which allows us to veto splitting for the 6th and 7th delimiters i.e. control over which
 splits are accepted, rather than being restricted to the single, baked-in strategy provided
 by the `limit` parameter.
 
@@ -185,7 +185,7 @@ ss.split(line, at: [1..5, 8])
 
 ## Gems
 
-- [rsplit](https://github.com/Tatzyr/rsplit) - a reverse-split implementation (only works with string separators)
+- [rsplit](https://github.com/Tatzyr/rsplit) - a reverse-split implementation (only works with string delimiters)
 
 ## Articles
 
