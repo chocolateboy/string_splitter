@@ -106,7 +106,7 @@ ss.split("foo:bar:baz", ":") { |split| split.position == split.count }
 # => ["foo:bar", "baz"]
 ```
 
-As a shortcut, the common case of splitting on separators at one or more indices is supported by an option:
+As a shortcut, the common case of splitting on separators at one or more positions is supported by an option:
 
 ```ruby
 ss.split('foo:bar:baz:quux', ':', at: [1, -1]) # => ["foo", "bar:baz", "quux"]
@@ -179,7 +179,7 @@ ss.split(line, at: [1..5, 8])
 
 # VERSION
 
-0.1.0
+0.2.0
 
 # SEE ALSO
 

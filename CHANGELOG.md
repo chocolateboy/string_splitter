@@ -1,4 +1,4 @@
-## 0.2.0 - TBD
+## 0.2.0 - 2018-06-22
 
 - **breaking change**: make `index` (AKA `offset`) 0-based and add `position` (AKA `pos`)
   as the 1-based accessor
