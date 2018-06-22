@@ -52,15 +52,15 @@ ss.split("foo:bar:baz:quux", ":", at: -1)
 # => ["foo:bar:baz", "quux"]
 
 # split on multiple separator indices
-ss.split("1:2:3:4:5:6:7:8:9", ":", at: [1..3, -1])
-# => ["1", "2", "3", "4:5:6:7:8", "9"]
+ss.split("1:2:3:4:5:6:7:8:9", ":", at: [1..3, -2])
+# => ["1", "2", "3", "4:5:6:7", "8:9"]
 
 # split from the right
 ss.rsplit("1:2:3:4:5:6:7:8:9", ":", at: [1..3, 5])
 # => ["1:2:3:4", "5:6", "7", "8", "9"]
 
 # full control via a block
-result = s.split('a:a:a:b:c:c:e:a:a:d:c', ":") do |split|
+result = ss.split('a:a:a:b:c:c:e:a:a:d:c', ":") do |split|
   split.index > 1 && split.lhs == split.rhs
 end
 # => ["a:a", "a:b:c", "c:e:a", "a:d:c"]
@@ -79,8 +79,9 @@ and handle a few common cases e.g.:
 But, because the API is squeezed into two overloaded parameters (the separator and the limit),
 achieving the desired effects can be tricky. For instance, while `String#split` removes empty
 trailing fields (by default), it provides no way to remove *all* empty fields. Likewise, the
-cramped API means there's no way to combine e.g. a limit (positive integer) with the option
-to preserve empty fields (negative integer).
+cramped API means there's no way to e.g. combine a limit (positive integer) with the option
+to preserve empty fields (negative integer), or use backreferences in a separator pattern
+without including its captured subexpressions in the result.
 
 If `split` was being written from scratch, without the baggage of its legacy API,
 it's possible that some of these options would be made explicit rather than overloading
@@ -119,7 +120,7 @@ As an example, the nominally unstructured output of many Unix commands is often,
 that's tantalizingly close to being machine-readable, apart from a few pesky exceptions e.g.:
 
 ```bash
-$ ls -la
+$ ls -l
 
 -rw-r--r-- 1 user users   87 Jun 18 18:16 CHANGELOG.md
 -rw-r--r-- 1 user users  254 Jun 19 21:21 Gemfile
