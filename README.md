@@ -151,7 +151,7 @@ instead of:
 One way to work around this is to parse the whole line e.g.:
 
 ```ruby
-line.match(/^(\S+) \s+ (\d+) \s+ (\S+) \s+ (\S+) \s+ (\d+) \s+ (\S+ \s+ \d+ \s+ \S+) (.+)$/x)
+line.match(/^(\S+) \s+ (\d+) \s+ (\S+) \s+ (\S+) \s+ (\d+) \s+ (\S+ \s+ \d+ \s+ \S+) \s+ (.+)$/x)
 ```
 
 But that requires us to specify *everything*. What we really want is a version of `split`

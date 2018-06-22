@@ -55,11 +55,13 @@ describe 'examples' do
   specify 'semi-structured input' do
     line = '-rw-r--r-- 1 user users   87 Jun 18 18:16 CHANGELOG.md'
     want = ['-rw-r--r--', '1', 'user', 'users', '87', 'Jun 18 18:16', 'CHANGELOG.md']
+    match = line.match(/^(\S+) \s+ (\d+) \s+ (\S+) \s+ (\S+) \s+ (\d+) \s+ (\S+ \s+ \d+ \s+ \S+) \s+ (.+)$/x)
 
     result = s.split(line) do |split|
       case split.index when 1..5, 8 then true end
     end
 
+    assert { match.captures == want }
     assert { result == want }
     assert { s.split(line, at: [1..5, 8]) == want }
   end
