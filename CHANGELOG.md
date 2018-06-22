@@ -1,4 +1,4 @@
-## 0.1.0 - TBD
+## 0.1.0 - 2018-06-22
 
 - **breaking change**: the block now takes a single `split` object with an `index`
   field, rather than seperate `index` and `split` arguments
