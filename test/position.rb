@@ -4,7 +4,7 @@
 
 require_relative 'test_helper'
 
-describe 'ordinal' do
+describe 'position' do
   s = StringSplitter.new
 
   %i[position pos].each do |name|
