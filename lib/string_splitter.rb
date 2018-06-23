@@ -137,68 +137,114 @@ class StringSplitter
     end
 
     ncaptures = match.captures.length
+    delimiter = renumber_backrefs(delimiter, ncaptures)
+    parts = string.split(/(#{delimiter})/, -1)
+    remove_trailing_empty_field!(parts, ncaptures)
+    result, splits = splits_for(parts, ncaptures)
+    count = splits.length
+    block ||= at ? match_positions(at, count) : ACCEPT
 
+    [result, block, splits, count, -1]
+  end
+
+  # increment back-references so they remain valid when the outer capture
+  # is added.
+  #
+  # e.g. to split on:
+  #
+  #   - <foo-comment> ... </foo-comment>
+  #   - <bar-comment> ... </bar-comment>
+  #
+  # before:
+  #
+  #   %r|   <(\w+-comment)> [^<]* </\1>   |x
+  #
+  # after:
+  #
+  #   %r| ( <(\w+-comment)> [^<]* </\2> ) |x
+
+  def renumber_backrefs(delimiter, ncaptures)
     if delimiter.is_a?(Regexp) && ncaptures > 0
-      # increment back-references so they remain valid when the outer capture
-      # is added e.g. to split on:
-      #
-      #   - <foo-comment> ... </foo-comment>
-      #   - <bar-comment> ... </bar-comment>
-      #
-      # etc.
-      #
-      # before:
-      #
-      #   %r|   <(\w+-comment)> [^<]* </\1>   |x
-      #
-      # after:
-      #
-      #   %r| ( <(\w+-comment)> [^<]* </\2> ) |x
-
       delimiter = delimiter.to_s.gsub(/\\(?:(\d+)|.)/) do
         match = Regexp.last_match
         match[1] ? '\\' + match[1].to_i.next.to_s : match[0]
       end
     end
 
-    parts = string.split(/(#{delimiter})/, -1)
-    result, splits = splits_for(parts, ncaptures)
-    count = splits.length
+    delimiter
+  end
 
-    unless block
-      if at
-        at = Array(at).map do |index|
-          if index.is_a?(Integer) && index.negative?
-            # translate 1-based negative indices to 1-based positive
-            # indices e.g:
-            #
-            #   ss.split("foo:bar:baz:quux", ":", at: -1)
-            #
-            # translates to:
-            #
-            #   ss.split("foo:bar:baz:quux", ":", at: 3)
-            #
-            # XXX note: we don't use modulo, because we don't want
-            # out-of-bounds indices to silently work e.g. we don't want:
-            #
-            #   ss.split("foo:bar:baz:quux", ":", -42)
-            #
-            # to mysteriously match when the index is 2
+  # work around Ruby's (and Perl's and Groovy's) unhelpful behavior when splitting
+  # on an empty string/pattern without removing trailing empty fields e.g.:
+  #
+  #   "foobar".split("", -1)
+  #   "foobar".split(//, -1)
+  #   # => ["f", "o", "o", "b", "a", "r", ""]
+  #
+  #   "foobar".split(/()/, -1)
+  #   # => ["f", "", "o", "", "o", "", "b", "", "a", "", "r", "", ""]
+  #
+  #   "foobar".split(/(())/, -1)
+  #   # => ["f", "", "", "o", "", "", "o", "", "", "b", "", "", "a", "", "", "r", "", "", ""]
+  #
+  # *there is no such thing as an empty field whose separator is empty*, so
+  # if String#split's result ends with an empty separator, 0 or more (empty)
+  # captures and an empty field, we can safely remove them.
 
-            count + 1 + index
-          else
-            index
-          end
-        end
+  def remove_trailing_empty_field!(parts, ncaptures)
+    # the trailing field is at index -1. if there are 0 captures, the separator
+    # is at -2:
+    #
+    #   [empty_separator, empty_field]
+    #
+    # if there is 1 capture, the separator is at -3:
+    #
+    #   [empty_separator, capture, empty_field]
+    #
+    # etc. therefore we find the separator by walking back
+    #
+    #  1 (empty field)
+    #  + ncaptures
+    #  + 1 (separator)
+    #
+    # steps from the end of the array i.e. ncaptures + 2
+    steps = ncaptures + 2
+    separator_index = steps * -1
 
-        block = lambda do |split|
-          case split.position when *at then true else false end
-        end
+    if parts[-1].empty? && parts[separator_index].empty? # rubocop:disable Style/GuardClause
+      # drop the empty separator, the (empty) captures, and the trailing empty
+      # field
+      parts.pop(steps)
+    end
+  end
+
+  def match_positions(at, count)
+    at = Array(at).map do |index|
+      if index.is_a?(Integer) && index.negative?
+        # translate 1-based negative indices to 1-based positive
+        # indices e.g:
+        #
+        #   ss.split("foo:bar:baz:quux", ":", at: -1)
+        #
+        # translates to:
+        #
+        #   ss.split("foo:bar:baz:quux", ":", at: 3)
+        #
+        # XXX note: we don't use modulo, because we don't want
+        # out-of-bounds indices to silently work e.g. we don't want:
+        #
+        #   ss.split("foo:bar:baz:quux", ":", -42)
+        #
+        # to mysteriously match when the index is 2
+
+        count + 1 + index
       else
-        block = ACCEPT
+        index
       end
     end
 
-    [result, block, splits, count, -1]
+    lambda do |split|
+      case split.position when *at then true else false end
+    end
   end
 end

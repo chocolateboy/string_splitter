@@ -1,3 +1,7 @@
+## 0.3.1 - TBD
+
+- remove trailing empty field when the separator is empty (#1)
+
 ## 0.3.0 - 2018-06-23
 
 - **breaking change**: rename the `default_separator` option to `default_delimiter`
