@@ -179,7 +179,7 @@ ss.split(line, at: [1..5, 8])
 
 # VERSION
 
-0.2.0
+0.3.0
 
 # SEE ALSO
 

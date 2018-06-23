@@ -1,4 +1,4 @@
-## 0.3.0 - TBD
+## 0.3.0 - 2018-06-23
 
 - **breaking change**: rename the `default_separator` option to `default_delimiter`
   - to avoid ambiguity in the code, refer to the input pattern/string as the

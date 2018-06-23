@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    string_splitter (0.2.0)
+    string_splitter (0.3.0)
       values (~> 1.8)
 
 GEM
