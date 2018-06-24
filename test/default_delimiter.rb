@@ -6,13 +6,19 @@ def assert_common(s)
   # it replaces the default whitespace delimiter
   result = s.split('1 2 3 4')
   assert { result != ['1', '2', '3', '4'] }
+  result = s.rsplit('1 2 3 4')
+  assert { result != ['1', '2', '3', '4'] }
 
   # it can be overridden with a per-method string
   result = s.split('1 2 3 4', ' ')
   assert { result == ['1', '2', '3', '4'] }
+  result = s.rsplit('1 2 3 4', ' ')
+  assert { result == ['1', '2', '3', '4'] }
 
   # it can be overridden with a per-method regex
   result = s.split('1-2:3-4', /[:-]/)
+  assert { result == ['1', '2', '3', '4'] }
+  result = s.rsplit('1-2:3-4', /[:-]/)
   assert { result == ['1', '2', '3', '4'] }
 end
 
@@ -33,6 +39,8 @@ describe 'default_delimiter' do
     s = StringSplitter.new(default_delimiter: '')
 
     result = s.split('foobar')
+    assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
+    result = s.rsplit('foobar')
     assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
   end
 
