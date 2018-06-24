@@ -4,7 +4,7 @@
 
 ## 0.3.1 - 2018-06-24
 
-- remove trailing empty field when the separator is empty (#1)
+- remove trailing empty field when the separator is empty ([#1](https://github.com/chocolateboy/string_splitter/issues/1))
 
 ## 0.3.0 - 2018-06-23
 
