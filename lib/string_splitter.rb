@@ -137,7 +137,7 @@ class StringSplitter
     end
 
     ncaptures = match.captures.length
-    delimiter = renumber_backrefs(delimiter, ncaptures)
+    delimiter = increment_backrefs(delimiter, ncaptures)
     parts = string.split(/(#{delimiter})/, -1)
     remove_trailing_empty_field!(parts, ncaptures)
     result, splits = splits_for(parts, ncaptures)
@@ -155,6 +155,8 @@ class StringSplitter
   #   - <foo-comment> ... </foo-comment>
   #   - <bar-comment> ... </bar-comment>
   #
+  # etc.
+  #
   # before:
   #
   #   %r|   <(\w+-comment)> [^<]* </\1>   |x
@@ -163,7 +165,7 @@ class StringSplitter
   #
   #   %r| ( <(\w+-comment)> [^<]* </\2> ) |x
 
-  def renumber_backrefs(delimiter, ncaptures)
+  def increment_backrefs(delimiter, ncaptures)
     if delimiter.is_a?(Regexp) && ncaptures > 0
       delimiter = delimiter.to_s.gsub(/\\(?:(\d+)|.)/) do
         match = Regexp.last_match
@@ -208,21 +210,19 @@ class StringSplitter
     #  + 1 (separator)
     #
     # steps from the end of the array i.e. ncaptures + 2
-    steps = ncaptures + 2
-    separator_index = steps * -1
+    count = ncaptures + 2
+    separator_index = count * -1
 
-    if parts[-1].empty? && parts[separator_index].empty? # rubocop:disable Style/GuardClause
-      # drop the empty separator, the (empty) captures, and the trailing empty
-      # field
-      parts.pop(steps)
-    end
+    return unless parts[-1].empty? && parts[separator_index].empty?
+
+    # drop the empty separator, the (empty) captures, and the trailing empty field
+    parts.pop(count)
   end
 
-  def match_positions(at, count)
-    at = Array(at).map do |index|
-      if index.is_a?(Integer) && index.negative?
-        # translate 1-based negative indices to 1-based positive
-        # indices e.g:
+  def match_positions(positions, nsplits)
+    positions = Array(positions).map do |position|
+      if position.is_a?(Integer) && position.negative?
+        # translate negative indices to 1-based non-negative indices e.g:
         #
         #   ss.split("foo:bar:baz:quux", ":", at: -1)
         #
@@ -235,16 +235,16 @@ class StringSplitter
         #
         #   ss.split("foo:bar:baz:quux", ":", -42)
         #
-        # to mysteriously match when the index is 2
+        # to mysteriously match when the position is 2
 
-        count + 1 + index
+        nsplits + 1 + position
       else
-        index
+        position
       end
     end
 
     lambda do |split|
-      case split.position when *at then true else false end
+      case split.position when *positions then true else false end
     end
   end
 end

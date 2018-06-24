@@ -1,4 +1,4 @@
-## 0.3.1 - TBD
+## 0.3.1 - 2018-06-24
 
 - remove trailing empty field when the separator is empty (#1)
 
