@@ -1,4 +1,4 @@
-## 0.4.0 - TBD
+## 0.4.0 - 2018-06-24
 
 - **breaking change**: remove the `offset` alias for `split.index`
 
