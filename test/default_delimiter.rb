@@ -23,7 +23,7 @@ def assert_common(s)
 end
 
 describe 'default_delimiter' do
-  specify 'string' do
+  test 'string' do
     s = StringSplitter.new(default_delimiter: ':')
 
     result = s.split('foo:bar:baz:quux')
@@ -35,7 +35,7 @@ describe 'default_delimiter' do
     assert_common(s)
   end
 
-  specify 'empty string' do
+  test 'empty string' do
     s = StringSplitter.new(default_delimiter: '')
 
     result = s.split('foobar')
@@ -44,7 +44,7 @@ describe 'default_delimiter' do
     assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
   end
 
-  specify 'regex without captures' do
+  test 'regex without captures' do
     s = StringSplitter.new(default_delimiter: /[:-]/)
 
     result = s.split('foo:bar-baz:quux')
@@ -56,7 +56,7 @@ describe 'default_delimiter' do
     assert_common(s)
   end
 
-  specify 'regex with captures' do
+  test 'regex with captures' do
     s = StringSplitter.new(default_delimiter: /(X)(Y)/, include_captures: false)
     ss = StringSplitter.new(default_delimiter: /(X)(Y)/, include_captures: true)
 

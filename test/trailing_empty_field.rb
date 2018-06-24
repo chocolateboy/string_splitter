@@ -10,7 +10,7 @@ describe 'remove the trailing empty field' do
   ss = StringSplitter.new(remove_empty: false, include_captures: true)
   string = 'foobar'
 
-  specify 'empty delimiter string' do
+  test 'empty delimiter string' do
     result = s.split(string, '')
     assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
 
@@ -18,7 +18,7 @@ describe 'remove the trailing empty field' do
     assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
   end
 
-  specify 'empty delimiter pattern (no captures)' do
+  test 'empty delimiter pattern (no captures)' do
     result = s.split(string, //)
     assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
 
@@ -26,7 +26,7 @@ describe 'remove the trailing empty field' do
     assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
   end
 
-  specify 'empty delimiter pattern (one capture)' do
+  test 'empty delimiter pattern (one capture)' do
     result = s.split(string, /()/)
     assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
 
@@ -34,7 +34,7 @@ describe 'remove the trailing empty field' do
     assert { result == ['f', '', 'o', '', 'o', '', 'b', '', 'a', '', 'r'] }
   end
 
-  specify 'empty delimiter pattern (sequential captures)' do
+  test 'empty delimiter pattern (sequential captures)' do
     result = s.split(string, /()()/)
     assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
 
@@ -42,7 +42,7 @@ describe 'remove the trailing empty field' do
     assert { result == ['f', '', '', 'o', '', '', 'o', '', '', 'b', '', '', 'a', '', '', 'r'] }
   end
 
-  specify 'empty delimiter pattern (nested captures)' do
+  test 'empty delimiter pattern (nested captures)' do
     result = s.split(string, /(())/)
     assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
 

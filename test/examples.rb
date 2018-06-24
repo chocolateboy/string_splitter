@@ -7,7 +7,7 @@ require_relative 'test_helper'
 describe 'examples' do
   s = StringSplitter.new
 
-  specify 'same as String#split' do
+  test 'same as String#split' do
     str = 'foo bar baz quux'
     want = ['foo', 'bar', 'baz', 'quux']
 
@@ -16,27 +16,27 @@ describe 'examples' do
     assert { s.split(str, /\s+/) == want }
   end
 
-  specify 'split on the first separator' do
+  test 'split on the first separator' do
     result = s.split('foo:bar:baz:quux', ':', at: 1)
     assert { result == ['foo', 'bar:baz:quux'] }
   end
 
-  specify 'split on the last separator' do
+  test 'split on the last separator' do
     result = s.split('foo:bar:baz:quux', ':', at: -1)
     assert { result == ['foo:bar:baz', 'quux'] }
   end
 
-  specify 'split at multiple separator positions' do
+  test 'split at multiple separator positions' do
     result = s.split('1:2:3:4:5:6:7:8:9', ':', at: [1..3, -2])
     assert { result == ['1', '2', '3', '4:5:6:7', '8:9'] }
   end
 
-  specify 'split from the right' do
+  test 'split from the right' do
     result = s.rsplit('1:2:3:4:5:6:7:8:9', ':', at: [1..3, 5])
     assert { result == ['1:2:3:4', '5:6', '7', '8', '9'] }
   end
 
-  specify 'full control via a block' do
+  test 'full control via a block' do
     result = s.split('a:a:a:b:c:c:e:a:a:d:c', ':') do |split|
       split.index > 0 && split.lhs == split.rhs
     end
@@ -44,7 +44,7 @@ describe 'examples' do
     assert { result == ['a:a', 'a:b:c', 'c:e:a', 'a:d:c'] }
   end
 
-  specify 'implement the `at` option manually' do
+  test 'implement the `at` option manually' do
     result = s.split('foo:bar:baz', ':') { |split| split.index == 0 }
     assert { result == ['foo', 'bar:baz'] }
 
@@ -52,7 +52,7 @@ describe 'examples' do
     assert { result == ['foo:bar', 'baz'] }
   end
 
-  specify 'semi-structured input' do
+  test 'semi-structured input' do
     line = '-rw-r--r-- 1 user users   87 Jun 18 18:16 CHANGELOG.md'
     want = ['-rw-r--r--', '1', 'user', 'users', '87', 'Jun 18 18:16', 'CHANGELOG.md']
     match = line.match(/^(\S+) \s+ (\d+) \s+ (\S+) \s+ (\S+) \s+ (\d+) \s+ (\S+ \s+ \d+ \s+ \S+) \s+ (.+)$/x)

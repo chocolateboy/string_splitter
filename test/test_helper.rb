@@ -33,6 +33,9 @@ module Minitest
       def create(name, desc)
         old_create(name.gsub('::', ' » '), desc)
       end
+
+      # use `test` instead of `specify` as an alias for `it`
+      alias test it
     end
   end
 
