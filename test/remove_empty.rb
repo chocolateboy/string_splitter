@@ -46,7 +46,7 @@ describe 'remove_empty' do
     assert { result == ['foo', 'bar', 'baz', 'quux'] }
   end
 
-  it 'multiple separators: removes everything' do
+  test 'multiple separators + no field: removes everything' do
     string = '::::'
 
     result = s.split(string, ':')
@@ -56,7 +56,7 @@ describe 'remove_empty' do
     assert { result == [] }
   end
 
-  it 'multiple separators: removes everything but the field' do
+  test 'multiple separators + field: removes everything but the field' do
     string = ':::foo:::'
 
     result = s.split(string, ':')

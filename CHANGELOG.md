@@ -1,3 +1,8 @@
+## 0.5.0 - TBD
+
+- add `reject`/`exclude` option which rejects splits at the specified positions
+- add `accept` alias for `at`
+
 ## 0.4.0 - 2018-06-24
 
 - **breaking change**: remove the `offset` alias for `split.index`

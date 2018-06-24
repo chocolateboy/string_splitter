@@ -38,8 +38,22 @@ class StringSplitter
 
   attr_reader :default_delimiter, :include_captures, :remove_empty, :spread_captures
 
-  def split(string, delimiter = @default_delimiter, at: nil, &block)
-    result, block, splits, count, index = split_common(string, delimiter, at, block)
+  def split(
+    string,
+    delimiter = @default_delimiter,
+    at: nil,
+    accept: at,
+    exclude: nil,
+    reject: exclude,
+    &block
+  )
+    result, block, splits, count, index = split_common(
+      string: string,
+      delimiter: delimiter,
+      accept: accept,
+      reject: reject,
+      block: block
+    )
 
     splits.each do |split|
       split = Split.with(split.merge({ index: (index += 1), count: count }))
@@ -66,8 +80,22 @@ class StringSplitter
 
   alias lsplit split
 
-  def rsplit(string, delimiter = @default_delimiter, at: nil, &block)
-    result, block, splits, count, index = split_common(string, delimiter, at, block)
+  def rsplit(
+    string,
+    delimiter = @default_delimiter,
+    at: nil,
+    accept: at,
+    exclude: nil,
+    reject: exclude,
+    &block
+  )
+    result, block, splits, count, index = split_common(
+      string: string,
+      delimiter: delimiter,
+      accept: accept,
+      reject: reject,
+      block: block
+    )
 
     splits.reverse!.each do |split|
       split = Split.with(split.merge({ index: (index += 1), count: count }))
@@ -129,10 +157,21 @@ class StringSplitter
   end
 
   # setup common to both split methods
-  def split_common(string, delimiter, at, block)
+  def split_common(string:, delimiter:, accept:, reject:, block:)
     unless (match = string.match(delimiter))
       result = (@remove_empty && string.empty?) ? [] : [string]
       return [result, block, NO_SPLITS, 0, -1]
+    end
+
+    accept = Array(accept)
+    reject = Array(reject)
+
+    if !reject.empty?
+      positions = reject
+      action = :reject
+    elsif !accept.empty?
+      positions = accept
+      action = :accept
     end
 
     ncaptures = match.captures.length
@@ -141,7 +180,7 @@ class StringSplitter
     remove_trailing_empty_field!(parts, ncaptures)
     result, splits = splits_for(parts, ncaptures)
     count = splits.length
-    block ||= at ? match_positions(at, count) : ACCEPT
+    block ||= positions ? match_positions(positions, action, count) : ACCEPT
 
     [result, block, splits, count, -1]
   end
@@ -218,7 +257,7 @@ class StringSplitter
     parts.pop(count)
   end
 
-  def match_positions(positions, nsplits)
+  def match_positions(positions, action, nsplits)
     positions = Array(positions).map do |position|
       if position.is_a?(Integer) && position.negative?
         # translate negative indices to 1-based non-negative indices e.g:
@@ -242,8 +281,10 @@ class StringSplitter
       end
     end
 
+    match = action == :accept
+
     lambda do |split|
-      case split.position when *positions then true else false end
+      case split.position when *positions then match else !match end
     end
   end
 end
