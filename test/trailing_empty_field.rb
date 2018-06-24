@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'test_helper.rb'
+require_relative 'test_helper'
 
 # make sure we don't keep String#split's trailing empty field when the separator
 # is empty: https://github.com/chocolateboy/string_splitter/issues/1

@@ -1,3 +1,7 @@
+## 0.4.0 - TBD
+
+- **breaking change**: remove the `offset` alias for `split.index`
+
 ## 0.3.1 - 2018-06-24
 
 - remove trailing empty field when the separator is empty (#1)

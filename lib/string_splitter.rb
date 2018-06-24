@@ -21,7 +21,6 @@ class StringSplitter
       index + 1
     end
 
-    alias_method :offset, :index
     alias_method :pos, :position
   end
 

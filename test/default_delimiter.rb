@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'test_helper.rb'
+require_relative 'test_helper'
 
 def assert_common(s)
   # it replaces the default whitespace delimiter

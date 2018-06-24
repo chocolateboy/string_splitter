@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'test_helper.rb'
+require_relative 'test_helper'
 
 describe 'split' do
   s = StringSplitter.new # remove_empty: false
