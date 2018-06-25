@@ -36,30 +36,47 @@ gem "string_splitter"
 require "string_splitter"
 
 ss = StringSplitter.new
+```
 
-# same as String#split
+**Same as `String#split`**
+
+```ruby
 ss.split("foo bar baz quux")
 ss.split("foo bar baz quux", " ")
 ss.split("foo bar baz quux", /\s+/)
 # => ["foo", "bar", "baz", "quux"]
+```
 
-# split at the first delimiter
+**Split at the first delimiter**
+
+```ruby
 ss.split("foo:bar:baz:quux", ":", at: 1)
 # => ["foo", "bar:baz:quux"]
+```
 
-# split at the last delimiter
+**Split at the last delimiter**
+
+```ruby
 ss.split("foo:bar:baz:quux", ":", at: -1)
 # => ["foo:bar:baz", "quux"]
+```
 
-# split at multiple delimiter positions
+**Split at multiple delimiter positions**
+
+```ruby
 ss.split("1:2:3:4:5:6:7:8:9", ":", at: [1..3, -2])
 # => ["1", "2", "3", "4:5:6:7", "8:9"]
+```
 
-# split from the right
+**Split from the right**
+
+```ruby
 ss.rsplit("1:2:3:4:5:6:7:8:9", ":", at: [1..3, 5])
 # => ["1:2:3:4", "5:6", "7", "8", "9"]
+```
+**Full control via a block**
 
-# full control via a block
+```ruby
 result = ss.split('a:a:a:b:c:c:e:a:a:d:c', ":") do |split|
   split.index > 0 && split.lhs == split.rhs
 end
@@ -201,3 +218,4 @@ Copyright © 2018 by chocolateboy.
 
 This is free software; you can redistribute it and/or modify it under the
 terms of the [Artistic License 2.0](http://www.opensource.org/licenses/artistic-license-2.0.php).
+
