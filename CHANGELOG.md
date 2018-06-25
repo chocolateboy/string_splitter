@@ -1,4 +1,4 @@
-## 0.5.0 - TBD
+## 0.5.0 - 2018-06-26
 
 - don't treat string delimiters as patterns
 - add a `reject`/`exclude` option which rejects splits at the specified positions
