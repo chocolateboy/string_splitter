@@ -13,7 +13,3 @@ Style/HashSyntax:
 
 Style/NumericPredicate:
   Enabled: false
-
-Style/WordArray:
-  Exclude:
-    - 'test/**/*.*'

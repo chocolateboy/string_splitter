@@ -19,7 +19,7 @@ describe 'remove_empty' do
     assert { result == ['', 'foo', 'bar', 'baz', 'quux'] }
 
     result = ss.split(string, ':') { true }
-    assert { result == ['foo', 'bar', 'baz', 'quux'] }
+    assert { result == %w[foo bar baz quux] }
   end
 
   it 'removes trailing empty tokens' do
@@ -32,7 +32,7 @@ describe 'remove_empty' do
     assert { result == ['foo', 'bar', 'baz', 'quux', ''] }
 
     result = ss.split(string, ':') { true }
-    assert { result == ['foo', 'bar', 'baz', 'quux'] }
+    assert { result == %w[foo bar baz quux] }
   end
 
   it 'removes embedded empty tokens' do
@@ -45,7 +45,7 @@ describe 'remove_empty' do
     assert { result == ['foo', 'bar', '', 'baz', 'quux'] }
 
     result = ss.split(string, ':')
-    assert { result == ['foo', 'bar', 'baz', 'quux'] }
+    assert { result == %w[foo bar baz quux] }
   end
 
   it 'removes all empty tokens' do
@@ -58,7 +58,7 @@ describe 'remove_empty' do
     assert { result == ['', 'foo', 'bar', '', 'baz', 'quux', ''] }
 
     result = ss.split(string, ':')
-    assert { result == ['foo', 'bar', 'baz', 'quux'] }
+    assert { result == %w[foo bar baz quux] }
   end
 
   test 'multiple separators + no field: removes everything' do

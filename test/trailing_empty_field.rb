@@ -12,23 +12,23 @@ describe 'remove the trailing empty field' do
 
   test 'empty delimiter string' do
     result = s.split(string, '')
-    assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
+    assert { result == %w[f o o b a r] }
 
     result = ss.split(string, '')
-    assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
+    assert { result == %w[f o o b a r] }
   end
 
   test 'empty delimiter pattern (no captures)' do
     result = s.split(string, //)
-    assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
+    assert { result == %w[f o o b a r] }
 
     result = ss.split(string, //)
-    assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
+    assert { result == %w[f o o b a r] }
   end
 
   test 'empty delimiter pattern (one capture)' do
     result = s.split(string, /()/)
-    assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
+    assert { result == %w[f o o b a r] }
 
     result = ss.split(string, /()/)
     assert { result == ['f', '', 'o', '', 'o', '', 'b', '', 'a', '', 'r'] }
@@ -36,7 +36,7 @@ describe 'remove the trailing empty field' do
 
   test 'empty delimiter pattern (sequential captures)' do
     result = s.split(string, /()()/)
-    assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
+    assert { result == %w[f o o b a r] }
 
     result = ss.split(string, /()()/)
     assert { result == ['f', '', '', 'o', '', '', 'o', '', '', 'b', '', '', 'a', '', '', 'r'] }
@@ -44,7 +44,7 @@ describe 'remove the trailing empty field' do
 
   test 'empty delimiter pattern (nested captures)' do
     result = s.split(string, /(())/)
-    assert { result == ['f', 'o', 'o', 'b', 'a', 'r'] }
+    assert { result == %w[f o o b a r] }
 
     result = ss.split(string, /(())/)
     assert { result == ['f', '', '', 'o', '', '', 'o', '', '', 'b', '', '', 'a', '', '', 'r'] }

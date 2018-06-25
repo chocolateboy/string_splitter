@@ -6,38 +6,25 @@ require_relative 'test_helper'
 
 describe 'emulate limit' do
   string = 'foo:bar:baz:quux'
-  s1 = StringSplitter.new # default: remove_empty: false
-  s2 = StringSplitter.new(remove_empty: false)
+  s = StringSplitter.new
 
   test 'limit: 1' do
-    result = s1.split(string, ':') { false }
-    assert { result == ['foo:bar:baz:quux'] }
-
-    result = s2.split(string, ':') { false }
+    result = s.split(string, ':') { false }
     assert { result == ['foo:bar:baz:quux'] }
   end
 
   test 'limit: 2' do
-    result = s1.split(string, ':') { |split| split.pos == 1 }
-    assert { result == ['foo', 'bar:baz:quux'] }
-
-    result = s2.split(string, ':') { |split| split.pos == 1 }
-    assert { result == ['foo', 'bar:baz:quux'] }
+    result = s.split(string, ':') { |split| split.pos == 1 }
+    assert { result == %w[foo bar:baz:quux] }
   end
 
   test 'limit: 3' do
-    result = s1.split(string, ':') { |split| split.pos < 3 }
-    assert { result == ['foo', 'bar', 'baz:quux'] }
-
-    result = s2.split(string, ':') { |split| split.pos < 3 }
-    assert { result == ['foo', 'bar', 'baz:quux'] }
+    result = s.split(string, ':') { |split| split.pos < 3 }
+    assert { result == %w[foo bar baz:quux] }
   end
 
   test 'limit: 0' do
-    result = s1.split(string, ':') { true }
-    assert { result == ['foo', 'bar', 'baz', 'quux'] }
-
-    result = s2.split(string, ':') { true }
-    assert { result == ['foo', 'bar', 'baz', 'quux'] }
+    result = s.split(string, ':') { true }
+    assert { result == %w[foo bar baz quux] }
   end
 end

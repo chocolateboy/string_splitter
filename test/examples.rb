@@ -9,7 +9,7 @@ describe 'examples' do
 
   test 'same as String#split' do
     str = 'foo bar baz quux'
-    want = ['foo', 'bar', 'baz', 'quux']
+    want = %w[foo bar baz quux]
 
     assert { s.split(str) == want }
     assert { s.split(str, ' ') == want }
