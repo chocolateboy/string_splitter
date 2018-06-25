@@ -1,5 +1,6 @@
 ## 0.5.0 - TBD
 
+- don't treat string delimiters as patterns
 - add `reject`/`exclude` option which rejects splits at the specified positions
 - add `accept` alias for `at`
 

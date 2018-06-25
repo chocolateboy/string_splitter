@@ -175,6 +175,7 @@ class StringSplitter
     end
 
     ncaptures = match.captures.length
+    delimiter = Regexp.quote(delimiter) if delimiter.is_a?(String)
     delimiter = increment_backrefs(delimiter, ncaptures)
     parts = string.split(/(#{delimiter})/, -1)
     remove_trailing_empty_field!(parts, ncaptures)
