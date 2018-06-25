@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# confirm split.position and its split.pos alias is 1-based
-
 require_relative 'test_helper'
+
+# confirm split.position and its split.pos alias is 1-based
 
 describe 'split.position' do
   s = StringSplitter.new

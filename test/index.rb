@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# confirm split.index is 0-based
-
 require_relative 'test_helper'
+
+# confirm split.index is 0-based
 
 describe 'split.index' do
   s = StringSplitter.new
