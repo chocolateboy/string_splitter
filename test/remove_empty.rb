@@ -2,14 +2,20 @@
 
 require_relative 'test_helper'
 
+# confirm that the :remove_empty option removes empty fields
+
 describe 'remove_empty' do
-  s = StringSplitter.new # remove_empty: false
+  s1 = StringSplitter.new # default: remove_empty: false
+  s2 = StringSplitter.new(remove_empty: false)
   ss = StringSplitter.new(remove_empty: true)
 
   it 'removes leading empty tokens' do
     string = ':foo:bar:baz:quux'
 
-    result = s.split(string, ':')
+    result = s1.split(string, ':')
+    assert { result == ['', 'foo', 'bar', 'baz', 'quux'] }
+
+    result = s2.split(string, ':')
     assert { result == ['', 'foo', 'bar', 'baz', 'quux'] }
 
     result = ss.split(string, ':') { true }
@@ -19,7 +25,10 @@ describe 'remove_empty' do
   it 'removes trailing empty tokens' do
     string = 'foo:bar:baz:quux:'
 
-    result = s.split(string, ':') { true }
+    result = s1.split(string, ':') { true }
+    assert { result == ['foo', 'bar', 'baz', 'quux', ''] }
+
+    result = s2.split(string, ':') { true }
     assert { result == ['foo', 'bar', 'baz', 'quux', ''] }
 
     result = ss.split(string, ':') { true }
@@ -29,7 +38,10 @@ describe 'remove_empty' do
   it 'removes embedded empty tokens' do
     string = 'foo:bar::baz:quux'
 
-    result = s.split(string, ':')
+    result = s1.split(string, ':')
+    assert { result == ['foo', 'bar', '', 'baz', 'quux'] }
+
+    result = s2.split(string, ':')
     assert { result == ['foo', 'bar', '', 'baz', 'quux'] }
 
     result = ss.split(string, ':')
@@ -39,7 +51,10 @@ describe 'remove_empty' do
   it 'removes all empty tokens' do
     string = ':foo:bar::baz:quux:'
 
-    result = s.split(string, ':')
+    result = s1.split(string, ':')
+    assert { result == ['', 'foo', 'bar', '', 'baz', 'quux', ''] }
+
+    result = s2.split(string, ':')
     assert { result == ['', 'foo', 'bar', '', 'baz', 'quux', ''] }
 
     result = ss.split(string, ':')
@@ -49,7 +64,10 @@ describe 'remove_empty' do
   test 'multiple separators + no field: removes everything' do
     string = '::::'
 
-    result = s.split(string, ':')
+    result = s1.split(string, ':')
+    assert { result == ['', '', '', '', ''] }
+
+    result = s2.split(string, ':')
     assert { result == ['', '', '', '', ''] }
 
     result = ss.split(string, ':')
@@ -59,7 +77,10 @@ describe 'remove_empty' do
   test 'multiple separators + field: removes everything but the field' do
     string = ':::foo:::'
 
-    result = s.split(string, ':')
+    result = s1.split(string, ':')
+    assert { result == ['', '', '', 'foo', '', '', ''] }
+
+    result = s2.split(string, ':')
     assert { result == ['', '', '', 'foo', '', '', ''] }
 
     result = ss.split(string, ':')

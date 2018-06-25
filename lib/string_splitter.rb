@@ -12,7 +12,7 @@ require 'values'
 # These enhancements allow splits to handle many cases that otherwise require bigger
 # guns e.g. regex matching or parsing.
 class StringSplitter
-  ACCEPT = ->(_split) { true }
+  ACCEPT_ALL = ->(_split) { true }
   DEFAULT_DELIMITER = /\s+/
   NO_SPLITS = []
 
@@ -42,7 +42,7 @@ class StringSplitter
     string,
     delimiter = @default_delimiter,
     at: nil,
-    accept: at,
+    select: at,
     exclude: nil,
     reject: exclude,
     &block
@@ -50,7 +50,7 @@ class StringSplitter
     result, block, splits, count, index = split_common(
       string: string,
       delimiter: delimiter,
-      accept: accept,
+      select: select,
       reject: reject,
       block: block
     )
@@ -84,7 +84,7 @@ class StringSplitter
     string,
     delimiter = @default_delimiter,
     at: nil,
-    accept: at,
+    select: at,
     exclude: nil,
     reject: exclude,
     &block
@@ -92,7 +92,7 @@ class StringSplitter
     result, block, splits, count, index = split_common(
       string: string,
       delimiter: delimiter,
-      accept: accept,
+      select: select,
       reject: reject,
       block: block
     )
@@ -157,21 +157,21 @@ class StringSplitter
   end
 
   # setup common to both split methods
-  def split_common(string:, delimiter:, accept:, reject:, block:)
+  def split_common(string:, delimiter:, select:, reject:, block:)
     unless (match = string.match(delimiter))
       result = (@remove_empty && string.empty?) ? [] : [string]
       return [result, block, NO_SPLITS, 0, -1]
     end
 
-    accept = Array(accept)
+    select = Array(select)
     reject = Array(reject)
 
     if !reject.empty?
       positions = reject
       action = :reject
-    elsif !accept.empty?
-      positions = accept
-      action = :accept
+    elsif !select.empty?
+      positions = select
+      action = :select
     end
 
     ncaptures = match.captures.length
@@ -181,7 +181,7 @@ class StringSplitter
     remove_trailing_empty_field!(parts, ncaptures)
     result, splits = splits_for(parts, ncaptures)
     count = splits.length
-    block ||= positions ? match_positions(positions, action, count) : ACCEPT
+    block ||= positions ? match_positions(positions, action, count) : ACCEPT_ALL
 
     [result, block, splits, count, -1]
   end
@@ -282,7 +282,7 @@ class StringSplitter
       end
     end
 
-    match = action == :accept
+    match = action == :select
 
     lambda do |split|
       case split.position when *positions then match else !match end

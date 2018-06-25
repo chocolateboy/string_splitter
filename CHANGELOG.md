@@ -1,8 +1,8 @@
 ## 0.5.0 - TBD
 
 - don't treat string delimiters as patterns
-- add `reject`/`exclude` option which rejects splits at the specified positions
-- add `accept` alias for `at`
+- add a `reject`/`exclude` option which rejects splits at the specified positions
+- add a `select` alias for `at`
 
 ## 0.4.0 - 2018-06-24
 

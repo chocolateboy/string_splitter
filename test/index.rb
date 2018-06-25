@@ -4,7 +4,7 @@
 
 require_relative 'test_helper'
 
-describe 'index' do
+describe 'split.index' do
   s = StringSplitter.new
 
   it 'is 0-based for a split at the beginning' do
