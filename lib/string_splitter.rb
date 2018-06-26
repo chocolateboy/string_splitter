@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'values'
+require_relative 'string_splitter/version'
 
 # This class extends the functionality of +String#split+ by:
 #
