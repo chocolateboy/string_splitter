@@ -11,6 +11,7 @@
 - [SYNOPSIS](#synopsis)
 - [DESCRIPTION](#description)
 - [WHY?](#why)
+- [COMPATIBILITY](#compatibility)
 - [VERSION](#version)
 - [SEE ALSO](#see-also)
   - [Gems](#gems)
@@ -193,6 +194,14 @@ Or via its option shortcut:
 ss.split(line, at: [1..5, 8])
 # => ["-rw-r--r--", "1", "user", "users", "87", "Jun 18 18:16", "CHANGELOG.md"]
 ```
+
+# COMPATIBILITY
+
+StringSplitter is tested and supported on the following versions of ruby (MRI):
+
+* 2.3
+* 2.4
+* 2.5
 
 # VERSION
 
