@@ -86,7 +86,7 @@ end
 
 # DESCRIPTION
 
-Many languages have built-in string `split` functions/methods. They behave similarly
+Many languages have built-in `split` functions/methods for strings. They behave similarly
 (notwithstanding the occasional [surprise](https://chriszetter.com/blog/2017/10/29/splitting-strings/)),
 and handle a few common cases e.g.:
 
@@ -135,7 +135,8 @@ ss.split('foo:bar:baz:quux', ':', at: [1, -1]) # => ["foo", "bar:baz", "quux"]
 I wanted to split semi-structured output into fields without having to resort to a regex or a full-blown parser.
 
 As an example, the nominally unstructured output of many Unix commands is often formatted in a way
-that's tantalizingly close to being machine-readable, apart from a few pesky exceptions e.g.:
+that's tantalizingly close to being [machine-readable](https://en.wikipedia.org/wiki/Delimiter-separated_values),
+apart from a few pesky exceptions e.g.:
 
 ```bash
 $ ls -l
