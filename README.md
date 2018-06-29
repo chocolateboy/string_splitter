@@ -95,7 +95,7 @@ and handle a few common cases e.g.:
 * removing (some) empty fields
 
 But, because the API is squeezed into two overloaded parameters (the delimiter and the limit),
-achieving the desired effects can be tricky. For instance, while `String#split` removes empty
+achieving the desired results can be tricky. For instance, while `String#split` removes empty
 trailing fields (by default), it provides no way to remove *all* empty fields. Likewise, the
 cramped API means there's no way to e.g. combine a limit (positive integer) with the option
 to preserve empty fields (negative integer), or use backreferences in a delimiter pattern
@@ -197,11 +197,8 @@ ss.split(line, at: [1..5, 8])
 
 # COMPATIBILITY
 
-StringSplitter is tested and supported on the following versions of ruby (MRI):
-
-* 2.3
-* 2.4
-* 2.5
+StringSplitter is tested and supported on all versions of ruby [supported by the ruby-core team](https://www.ruby-lang.org/en/downloads/branches/),
+i.e., currently, Ruby 2.3 and above.
 
 # VERSION
 
