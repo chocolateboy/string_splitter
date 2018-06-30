@@ -91,7 +91,7 @@ Many languages have built-in `split` functions/methods for strings. They behave 
 and handle a few common cases e.g.:
 
 * limiting the number of splits
-* including the separators in the results
+* including the separator(s) in the results
 * removing (some) empty fields
 
 But, because the API is squeezed into two overloaded parameters (the delimiter and the limit),
@@ -198,7 +198,7 @@ ss.split(line, at: [1..5, 8])
 
 # COMPATIBILITY
 
-StringSplitter is tested and supported on all versions of ruby [supported by the ruby-core team](https://www.ruby-lang.org/en/downloads/branches/),
+StringSplitter is tested and supported on all versions of Ruby [supported by the ruby-core team](https://www.ruby-lang.org/en/downloads/branches/),
 i.e., currently, Ruby 2.3 and above.
 
 # VERSION

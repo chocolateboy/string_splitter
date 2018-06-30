@@ -71,7 +71,7 @@ class StringSplitter
 
         result << split.rhs
       else
-        # append the rhs
+        # concatenate the rhs
         result[-1] = result[-1] + split.separator + split.rhs
       end
     end

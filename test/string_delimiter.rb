@@ -2,7 +2,7 @@
 
 require_relative 'test_helper'
 
-# make sure string delimiters are treated as strings and not patterns
+# make sure string delimiters are matched as strings rather than patterns
 
 describe 'string delimiter' do
   s = StringSplitter.new
