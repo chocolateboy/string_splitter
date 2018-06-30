@@ -7,8 +7,8 @@ require_relative 'string_splitter/version'
 #
 #   - providing full control over which splits are accepted or rejected
 #   - adding support for splitting from right-to-left
-#   - encapsulating splitting options/preferences in instances rather than trying to
-#     cram them into overloaded method parameters
+#   - encapsulating splitting options/preferences in the splitter rather
+#     than trying to cram them into overloaded method parameters
 #
 # These enhancements allow splits to handle many cases that otherwise require bigger
 # guns e.g. regex matching or parsing.
@@ -48,7 +48,7 @@ class StringSplitter
     reject: exclude,
     &block
   )
-    result, block, splits, count, index = split_common(
+    result, splits, block = split_init(
       string: string,
       delimiter: delimiter,
       select: select,
@@ -56,8 +56,10 @@ class StringSplitter
       block: block
     )
 
-    splits.each do |split|
-      split = Split.with(split.merge({ index: (index += 1), count: count }))
+    count = splits.length
+
+    splits.each_with_index do |split, index|
+      split = Split.with(split.merge({ index: index, count: count }))
       result << split.lhs if result.empty?
 
       if block.call(split)
@@ -90,7 +92,7 @@ class StringSplitter
     reject: exclude,
     &block
   )
-    result, block, splits, count, index = split_common(
+    result, splits, block = split_init(
       string: string,
       delimiter: delimiter,
       select: select,
@@ -98,8 +100,10 @@ class StringSplitter
       block: block
     )
 
-    splits.reverse!.each do |split|
-      split = Split.with(split.merge({ index: (index += 1), count: count }))
+    count = splits.length
+
+    splits.reverse!.each_with_index do |split, index|
+      split = Split.with(split.merge({ index: index, count: count }))
       result.unshift(split.rhs) if result.empty?
 
       if block.call(split)
@@ -157,11 +161,18 @@ class StringSplitter
     [result, splits]
   end
 
-  # setup common to both split methods
-  def split_common(string:, delimiter:, select:, reject:, block:)
+  # takes a hash of options passed to +split+ or +rsplit+ and returns a:
+  #
+  #   [result, splits, block]
+  #
+  # triple, where `result` is the return value of the method, `splits` is an array
+  # of hashes containg the lhs/rhs, separator and captures of each split, and
+  # `block` is a proc which selects whether each split should be accepted or
+  # rejected
+  def split_init(string:, delimiter:, select:, reject:, block:)
     unless (match = string.match(delimiter))
       result = (@remove_empty && string.empty?) ? [] : [string]
-      return [result, block, NO_SPLITS, 0, -1]
+      return [result, NO_SPLITS, block]
     end
 
     select = Array(select)
@@ -181,10 +192,9 @@ class StringSplitter
     parts = string.split(/(#{delimiter})/, -1)
     remove_trailing_empty_field!(parts, ncaptures)
     result, splits = splits_for(parts, ncaptures)
-    count = splits.length
-    block ||= positions ? match_positions(positions, action, count) : ACCEPT_ALL
+    block ||= positions ? match_positions(positions, action, splits.length) : ACCEPT_ALL
 
-    [result, block, splits, count, -1]
+    [result, splits, block]
   end
 
   # increment back-references so they remain valid when the outer capture
