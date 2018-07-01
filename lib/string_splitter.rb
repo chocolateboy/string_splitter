@@ -166,8 +166,8 @@ class StringSplitter
   #   [result, splits, block]
   #
   # triple, where `result` is the return value of the method, `splits` is an array
-  # of hashes containg the lhs/rhs, separator and captures of each split, and
-  # `block` is a proc which selects whether each split should be accepted or
+  # of hashes containing the lhs/rhs, separator and captures of each split, and
+  # `block` is a proc which specifies whether each split should be accepted or
   # rejected
   def split_init(string:, delimiter:, select:, reject:, block:)
     unless (match = string.match(delimiter))
