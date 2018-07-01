@@ -13,3 +13,7 @@ Style/HashSyntax:
 
 Style/NumericPredicate:
   Enabled: false
+
+Style/Semicolon:
+  Exclude:
+    - 'test/**/*.rb'
