@@ -1,3 +1,8 @@
+## 0.5.1 - 2018-07-01
+
+- set StringSplitter::VERSION when `string_splitter.rb` is loaded
+- doc tweaks
+
 ## 0.5.0 - 2018-06-26
 
 - don't treat string delimiters as patterns

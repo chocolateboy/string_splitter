@@ -203,7 +203,7 @@ i.e., currently, Ruby 2.3 and above.
 
 # VERSION
 
-0.5.0
+0.5.1
 
 # SEE ALSO
 
