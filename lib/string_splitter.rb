@@ -27,7 +27,7 @@ class StringSplitter
 
   # simulate an enum. the value is returned by the case statement
   # in the generated block if the positions match
-  class Action
+  module Action
     SELECT = true
     REJECT = false
   end
