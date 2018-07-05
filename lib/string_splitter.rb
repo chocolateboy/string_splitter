@@ -25,6 +25,15 @@ class StringSplitter
     alias_method :pos, :position
   end
 
+  # simulate an enum. the value is returned by the case statement
+  # in the generated block if the positions match
+  class Action
+    SELECT = true
+    REJECT = false
+  end
+
+  private_constant :Action
+
   def initialize(
     default_delimiter: DEFAULT_DELIMITER,
     include_captures: true,
@@ -180,10 +189,10 @@ class StringSplitter
 
     if !reject.empty?
       positions = reject
-      action = :reject
+      action = Action::REJECT
     elsif !select.empty?
       positions = select
-      action = :select
+      action = Action::SELECT
     end
 
     ncaptures = match.captures.length
@@ -293,10 +302,8 @@ class StringSplitter
       end
     end
 
-    match = action == :select
-
     lambda do |split|
-      case split.position when *positions then match else !match end
+      case split.position when *positions then action else !action end
     end
   end
 end
