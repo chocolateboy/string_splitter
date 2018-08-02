@@ -27,8 +27,8 @@ describe 'examples' do
   end
 
   test 'split at multiple separator positions' do
-    result = s.split('1:2:3:4:5:6:7:8:9', ':', at: [1..3, -2])
-    assert { result == ['1', '2', '3', '4:5:6:7', '8:9'] }
+    result = s.split('1:2:3:4:5:6:7:8:9', ':', at: [1..3, -1])
+    assert { result == ['1', '2', '3', '4:5:6:7:8', '9'] }
   end
 
   test 'split from the right' do

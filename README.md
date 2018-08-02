@@ -65,8 +65,8 @@ ss.split("foo:bar:baz:quux", ":", at: -1)
 **Split at multiple delimiter positions**
 
 ```ruby
-ss.split("1:2:3:4:5:6:7:8:9", ":", at: [1..3, -2])
-# => ["1", "2", "3", "4:5:6:7", "8:9"]
+ss.split("1:2:3:4:5:6:7:8:9", ":", at: [1..3, -1])
+# => ["1", "2", "3", "4:5:6:7:8", "9"]
 ```
 
 **Split from the right**
@@ -78,7 +78,7 @@ ss.rsplit("1:2:3:4:5:6:7:8:9", ":", at: [1..3, 5])
 **Full control via a block**
 
 ```ruby
-result = ss.split('a:a:a:b:c:c:e:a:a:d:c', ":") do |split|
+result = ss.split("a:a:a:b:c:c:e:a:a:d:c", ":") do |split|
   split.index > 0 && split.lhs == split.rhs
 end
 # => ["a:a", "a:b:c", "c:e:a", "a:d:c"]
@@ -127,7 +127,7 @@ ss.split("foo:bar:baz", ":") { |split| split.position == split.count }
 As a shortcut, the common case of splitting on delimiters at one or more positions is supported by an option:
 
 ```ruby
-ss.split('foo:bar:baz:quux', ':', at: [1, -1]) # => ["foo", "bar:baz", "quux"]
+ss.split("foo:bar:baz:quux", ":", at: [1, -1]) # => ["foo", "bar:baz", "quux"]
 ```
 
 # WHY?
@@ -175,9 +175,9 @@ line.match(/^(\S+) \s+ (\d+) \s+ (\S+) \s+ (\S+) \s+ (\d+) \s+ (\S+ \s+ \d+ \s+ 
 ```
 
 But that requires us to specify *everything*. What we really want is a version of `split`
-which allows us to veto splitting for the 6th and 7th delimiters i.e. control over which
-splits are accepted, rather than being restricted to the single, baked-in strategy provided
-by the `limit` parameter.
+which allows us to veto splitting for the 6th and 7th delimiters (and to stop after the
+8th delimiter) i.e. control over which splits are accepted, rather than being restricted
+to the single, baked-in strategy provided by the `limit` parameter.
 
 By providing a simple way to accept or reject each split, StringSplitter makes cases like
 this easy to handle, either via a block:
