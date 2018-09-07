@@ -2,7 +2,7 @@
 
 require_relative 'test_helper'
 
-# confirm regex delimiters work as expected
+# confirm regex delimiters work with and without captures
 
 describe 'regex delimiter' do
   test 'regex without captures' do

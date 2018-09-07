@@ -9,12 +9,12 @@ describe 'emulate limit' do
   s = StringSplitter.new
 
   test 'limit: 1' do
-    result = s.split(string, ':') { false }
+    result = s.split(string, ':') { |split| split.pos < 1 }
     assert { result == ['foo:bar:baz:quux'] }
   end
 
   test 'limit: 2' do
-    result = s.split(string, ':') { |split| split.pos == 1 }
+    result = s.split(string, ':') { |split| split.pos < 2 }
     assert { result == %w[foo bar:baz:quux] }
   end
 
