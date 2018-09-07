@@ -29,17 +29,19 @@ describe 'default_delimiter' do
   test 'string' do
     s = StringSplitter.new(default_delimiter: ':')
 
+    assert_common(s)
+
     result = s.split('foo:bar:baz:quux')
     assert { result == %w[foo bar baz quux] }
 
     result = s.rsplit('foo:bar:baz:quux')
     assert { result == %w[foo bar baz quux] }
-
-    assert_common(s)
   end
 
   test 'empty string' do
     s = StringSplitter.new(default_delimiter: '')
+
+    assert_common(s)
 
     result = s.split('foobar')
     assert { result == %w[f o o b a r] }
@@ -51,18 +53,21 @@ describe 'default_delimiter' do
   test 'regex without captures' do
     s = StringSplitter.new(default_delimiter: /[:-]/)
 
+    assert_common(s)
+
     result = s.split('foo:bar-baz:quux')
     assert { result == %w[foo bar baz quux] }
 
     result = s.rsplit('foo:bar-baz:quux')
     assert { result == %w[foo bar baz quux] }
-
-    assert_common(s)
   end
 
   test 'regex with captures' do
     s = StringSplitter.new(default_delimiter: /(X)(Y)/, include_captures: false)
     ss = StringSplitter.new(default_delimiter: /(X)(Y)/, include_captures: true)
+
+    assert_common(s)
+    assert_common(ss)
 
     result = s.split('fooXYbarXYbazXYquux')
     assert { result == %w[foo bar baz quux] }
@@ -75,7 +80,5 @@ describe 'default_delimiter' do
 
     result = ss.rsplit('fooXYbarXYbazXYquux')
     assert { result == %w[foo X Y bar X Y baz X Y quux] }
-
-    assert_common(s)
   end
 end
