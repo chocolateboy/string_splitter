@@ -107,8 +107,11 @@ the parameters. And, indeed, this is possible in some implementations,
 e.g. in Crystal:
 
 ```ruby
-":foo:bar:baz:".split(":", remove_empty: false) # => ["", "foo", "bar", "baz", ""]
-":foo:bar:baz:".split(":", remove_empty: true)  # => ["foo", "bar", "baz"]
+":foo:bar:baz:".split(":", remove_empty: false)
+# => ["", "foo", "bar", "baz", ""]
+
+":foo:bar:baz:".split(":", remove_empty: true)
+# => ["foo", "bar", "baz"]
 ````
 
 StringSplitter takes this one step further by moving the configuration out of the method altogether
@@ -127,7 +130,8 @@ ss.split("foo:bar:baz", ":") { |split| split.position == split.count }
 As a shortcut, the common case of splitting on delimiters at one or more positions is supported by an option:
 
 ```ruby
-ss.split("foo:bar:baz:quux", ":", at: [1, -1]) # => ["foo", "bar:baz", "quux"]
+ss.split("foo:bar:baz:quux", ":", at: [1, -1])
+# => ["foo", "bar:baz", "quux"]
 ```
 
 # WHY?
