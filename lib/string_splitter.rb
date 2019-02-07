@@ -218,11 +218,11 @@ class StringSplitter
   #
   # before:
   #
-  #   %r|   <(\w+-comment)> [^<]* </\1-comment>   |x
+  #   %r|   <(\w+-comment)> [^<]* </\1>   |x
   #
   # after:
   #
-  #   %r| ( <(\w+-comment)> [^<]* </\2-comment> ) |x
+  #   %r| ( <(\w+-comment)> [^<]* </\2> ) |x
 
   def increment_backrefs(delimiter, ncaptures)
     if delimiter.is_a?(Regexp) && ncaptures > 0
