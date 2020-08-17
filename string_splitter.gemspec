@@ -14,9 +14,8 @@ Gem::Specification.new do |spec|
   spec.license  = 'Artistic-2.0'
 
   spec.files = `git ls-files -z *.md bin lib`.split("\0")
-  spec.require_paths = %w[lib]
 
-  # spec.required_ruby_version = '>= 2.3.0'
+  spec.required_ruby_version = '>= 2.4'
 
   spec.metadata = {
     'allowed_push_host' => 'https://rubygems.org',
@@ -27,10 +26,10 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'values', '~> 1.8'
 
-  spec.add_development_dependency 'bundler', '~> 1.16'
-  spec.add_development_dependency 'minitest', '~> 5.11'
-  spec.add_development_dependency 'minitest-power_assert', '~> 0.3.0'
+  spec.add_development_dependency 'bundler', '~> 2.1'
+  spec.add_development_dependency 'minitest', '~> 5.0'
+  spec.add_development_dependency 'minitest-power_assert', '~> 0.3'
   spec.add_development_dependency 'minitest-reporters', '~> 1.3'
-  spec.add_development_dependency 'rake', '~> 12.3'
-  spec.add_development_dependency 'rubocop', '~> 0.62.0'
+  spec.add_development_dependency 'rake', '~> 13.0'
+  spec.add_development_dependency 'rubocop', '~> 0.89'
 end

@@ -8,8 +8,13 @@ Rake::TestTask.new do |t|
 end
 
 desc 'Check the codebase for style violations'
-task :rubocop do
+task :lint do
   sh 'rubocop', '--display-cop-names', '--config', 'resources/rubocop/rubocop.yml'
+end
+
+desc 'Open an IRB console with the gem loaded'
+task :console do
+  sh './resources/bin/console.rb'
 end
 
 # FIXME this runs after the release!

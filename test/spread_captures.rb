@@ -23,12 +23,12 @@ describe 'spread_captures' do
   end
 
   test 'false' do
-    s = StringSplitter.new(include_captures: true, spread_captures: false)
+    ss = StringSplitter.new(include_captures: true, spread_captures: false)
 
-    result = s.split('fooXYbarXYbazXYquux', /(X)(Y)/)
+    result = ss.split('fooXYbarXYbazXYquux', /(X)(Y)/)
     assert { result == ['foo', %w[X Y], 'bar', %w[X Y], 'baz', %w[X Y], 'quux'] }
 
-    result = s.rsplit('fooXYbarXYbazXYquux', /(X)(Y)/)
+    result = ss.rsplit('fooXYbarXYbazXYquux', /(X)(Y)/)
     assert { result == ['foo', %w[X Y], 'bar', %w[X Y], 'baz', %w[X Y], 'quux'] }
   end
 end

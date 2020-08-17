@@ -2,17 +2,19 @@
 
 inherit_from: default.yml
 
-Naming/UncommunicativeMethodParamName:
-  Enabled: false
+AllCops:
+  TargetRubyVersion: 2.4
 
-Style/BracesAroundHashParameters:
-  Enabled: False
+inherit_mode:
+  merge:
+    - Include
+    - Exclude
 
-Style/HashSyntax:
-  Enabled: false
-
-Style/NumericPredicate:
-  Enabled: false
+AllCops:
+  Include:
+    - 'Rakefile'
+  Exclude:
+    - 'resources/**/*'
 
 Style/Semicolon:
   Exclude:

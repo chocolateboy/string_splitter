@@ -5,41 +5,65 @@ require_relative 'test_helper'
 # confirm split.lhs contains the field before the split
 
 describe 'split.lhs' do
-  s = StringSplitter.new
+  ss = StringSplitter.new
 
-  test 'lhs: 1' do
+  test '0 splits' do
     result = []
-    s.split('foo:bar', ':') { |split| result << split.lhs; true }
-    assert { result == %w[foo] }
-  end
+    ss.split('foo', ':') { |split| result << split.lhs; true }
+    assert { result == [] }
 
-  test 'lhs: 2' do
     result = []
-    s.split('foo:bar:baz', ':') { |split| result << split.lhs; true }
-    assert { result == %w[foo bar] }
-  end
-
-  test 'lhs: 3' do
-    result = []
-    s.split('foo:bar:baz:quux', ':') { |split| result << split.lhs; true }
-    assert { result == %w[foo bar baz] }
-  end
-
-  test 'lhs: 0' do
-    result = []
-    s.split('foo', ':') { |split| result << split.lhs; true }
+    ss.rsplit('foo', ':') { |split| result << split.lhs; true }
     assert { result == [] }
   end
 
-  test 'empty: single' do
+  test '1 split' do
     result = []
-    s.split(':foo', ':') { |split| result << split.lhs; true }
+    ss.split('foo:bar', ':') { |split| result << split.lhs; true }
+    assert { result == %w[foo] }
+
+    result = []
+    ss.rsplit('foo:bar', ':') { |split| result << split.lhs; true }
+    assert { result == %w[foo] }
+  end
+
+  test '2 splits' do
+    result = []
+    ss.split('foo:bar:baz', ':') { |split| result << split.lhs; true }
+    assert { result == %w[foo bar] }
+
+    result = []
+    ss.rsplit('foo:bar:baz', ':') { |split| result << split.lhs; true }
+    assert { result == %w[bar foo] }
+  end
+
+  test '3 splits' do
+    result = []
+    ss.split('foo:bar:baz:quux', ':') { |split| result << split.lhs; true }
+    assert { result == %w[foo bar baz] }
+
+    result = []
+    ss.rsplit('foo:bar:baz:quux', ':') { |split| result << split.lhs; true }
+    assert { result == %w[baz bar foo] }
+  end
+
+  test 'empty lhs, 1 split' do
+    result = []
+    ss.split(':foo', ':') { |split| result << split.lhs; true }
+    assert { result == [''] }
+
+    result = []
+    ss.rsplit(':foo', ':') { |split| result << split.lhs; true }
     assert { result == [''] }
   end
 
-  test 'empty: multi' do
+  test 'empty lhs, multiple splits' do
     result = []
-    s.split(':foo:bar:baz:quux', ':') { |split| result << split.lhs; true }
+    ss.split(':foo:bar:baz:quux', ':') { |split| result << split.lhs; true }
     assert { result == ['', 'foo', 'bar', 'baz'] }
+
+    result = []
+    ss.rsplit(':foo:bar:baz:quux', ':') { |split| result << split.lhs; true }
+    assert { result == ['baz', 'bar', 'foo', ''] }
   end
 end

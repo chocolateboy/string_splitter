@@ -1,7 +1,17 @@
+## 0.6.0 - TBD
+
+### Breaking Changes
+
+- EOL Ruby versions (2.3 and 2.4) are no longer supported
+- rename the `remove_empty` option `remove_empty_fields`
+
+### Fixes
+
+- correctly handle backreferences in delimiter patterns
+
 ## 0.5.1 - 2018-07-01
 
 - set StringSplitter::VERSION when `string_splitter.rb` is loaded
-- doc tweaks
 
 ## 0.5.0 - 2018-06-26
 
@@ -11,27 +21,37 @@
 
 ## 0.4.0 - 2018-06-24
 
-- **breaking change**: remove the `offset` alias for `split.index`
+### Breaking Changes
+
+- remove the `offset` alias for `split.index`
 
 ## 0.3.1 - 2018-06-24
 
-- remove trailing empty field when the separator is empty ([#1](https://github.com/chocolateboy/string_splitter/issues/1))
+- remove trailing empty field when the separator is empty
+  ([#1](https://github.com/chocolateboy/string_splitter/issues/1))
 
 ## 0.3.0 - 2018-06-23
 
-- **breaking change**: rename the `default_separator` option to `default_delimiter`
-  - to avoid ambiguity in the code, refer to the input pattern/string as the
-    "delimiter" and the matched string as the "separator"
+### Breaking Changes
+
+- rename the `default_separator` option `default_delimiter`
 
 ## 0.2.0 - 2018-06-22
 
-- **breaking change**: make `index` (AKA `offset`) 0-based and add `position`
-  (AKA `pos`) as the 1-based accessor
+### Breaking Changes
+
+- make `index` (AKA `offset`) 0-based and add `position` (AKA `pos`) as the
+  1-based accessor
 
 ## 0.1.0 - 2018-06-22
 
-- **breaking change**: the block now takes a single `split` object with an
-  `index` accessor, rather than seperate `index` and `split` arguments
+### Breaking Changes
+
+- the block now takes a single `split` object with an `index` accessor, rather
+  than seperate `index` and `split` arguments
+
+### Features
+
 - add support for negative indices in the value supplied to the `at` option
 - add a `count` field to the split object containing the total number of splits
 
