@@ -54,8 +54,8 @@ ss.split("foo", //)
 ```
 
 ```ruby
-ss.split("", ":")
-ss.split("", /:/)
+ss.split("", "...")
+ss.split("", /.../)
 # => []
 ```
 
@@ -63,6 +63,7 @@ ss.split("", /:/)
 
 ```ruby
 ss.split("foo:bar:baz:quux", ":", at: 1)
+ss.split("foo:bar:baz:quux", ":", select: 1)
 # => ["foo", "bar:baz:quux"]
 ```
 
@@ -80,12 +81,40 @@ ss.split("1:2:3:4:5:6:7:8:9", ":", at: [1..3, -1])
 # => ["1", "2", "3", "4:5:6:7:8", "9"]
 ```
 
+**Split at all but the first and last delimiters**
+
+```ruby
+ss.split("1:2:3:4:5:6", ":", except: [1, -1])
+ss.split("1:2:3:4:5:6", ":", reject: [1, -1])
+# => ["1:2", "3", "4", "5:6"]
+```
+
 **Split from the right**
 
 ```ruby
 ss.rsplit("1:2:3:4:5:6:7:8:9", ":", at: [1..3, 5])
 # => ["1:2:3:4", "5:6", "7", "8", "9"]
 ```
+
+**Split with negative, descending, and infinite ranges**
+
+```ruby
+ss.split("1:2:3:4:5:6:7:8:9", ":", at: 4...)
+ss.split("1:2:3:4:5:6:7:8:9", ":", at: [4...])
+# => ["1:2:3:4", "5", "6", "7", "8:9"]
+```
+
+```ruby
+ss.split("1:2:3:4:5:6:7:8:9", ":", at: ..-3)
+ss.split("1:2:3:4:5:6:7:8:9", ":", at: [..-3])
+# => ["1", "2", "3", "4", "5", "6", "7:8:9"]
+```
+
+```ruby
+ss.split("1:2:3:4:5:6:7:8:9", ":", at: [1, 5..3, -2..])
+# => ["1", "2:3", "4", "5", "6:7", "8", "9"]
+```
+
 **Full control via a block**
 
 ```ruby

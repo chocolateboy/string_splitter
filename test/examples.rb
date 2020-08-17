@@ -8,12 +8,12 @@ describe 'examples' do
   ss = StringSplitter.new
 
   test 'same as String#split (1)' do
-    str = 'foo bar baz quux'
+    string = 'foo bar baz quux'
     want = %w[foo bar baz quux]
 
-    assert { ss.split(str) == want }
-    assert { ss.split(str, ' ') == want }
-    assert { ss.split(str, /\s+/) == want }
+    assert { ss.split(string) == want }
+    assert { ss.split(string, ' ') == want }
+    assert { ss.split(string, /\s+/) == want }
   end
 
   test 'same as String#split (2)' do

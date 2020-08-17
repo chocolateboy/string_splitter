@@ -33,7 +33,7 @@ describe 'split.separator' do
     assert { result == ['+'] }
 
     result = []
-    ss.split('foo-bar', /[+-]/) { |split| result << split.separator; true }
+    ss.rsplit('foo-bar', /[+-]/) { |split| result << split.separator; true }
     assert { result == ['-'] }
   end
 

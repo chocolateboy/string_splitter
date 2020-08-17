@@ -20,7 +20,7 @@ require_relative 'string_splitter/version'
 #     than trying to cram them into overloaded method parameters
 #
 # These enhancements allow splits to handle many cases that otherwise require bigger
-# guns e.g. regex matching or parsing.
+# guns, e.g. regex matching or parsing.
 #
 # Implementation-wise, we effectively use the built-in +String#split+ method as a
 # tokenizer, and parse the resulting tokens into an array of Split objects with the
@@ -28,9 +28,9 @@ require_relative 'string_splitter/version'
 #
 #   - captures:  separator substrings captured by parentheses in the delimiter pattern
 #   - count:     the number of splits
-#   - index:     the 0-based index of this split in the array
+#   - index:     the 0-based index of the split in the array
 #   - lhs:       the string to the left of the separator (back to the previous split candidate)
-#   - position:  the 1-based index of this split in the array
+#   - position:  the 1-based index of the split in the array
 #   - rhs:       the string to the right of the separator (up to the next split candidate)
 #   - separator: the string matched by the delimiter pattern/string
 class StringSplitter
@@ -83,9 +83,9 @@ class StringSplitter
     string,
     delimiter = @default_delimiter,
     at: nil, # alias for select
-    exclude: nil, # alias for reject
+    except: nil, # alias for reject
     select: at,
-    reject: exclude,
+    reject: except,
     &block
   )
     result, splits, accept = init(
@@ -105,7 +105,7 @@ class StringSplitter
       if accept.call(split)
         result << split.captures << split.rhs
       else
-        # concatenate the rhs
+        # append the rhs
         result[-1] = result[-1] + split.separator + split.rhs
       end
     end
@@ -119,9 +119,9 @@ class StringSplitter
     string,
     delimiter = @default_delimiter,
     at: nil, # alias for select
-    exclude: nil, # alias for reject
+    except: nil, # alias for reject
     select: at,
-    reject: exclude,
+    reject: except,
     &block
   )
     result, splits, accept = init(
@@ -132,7 +132,7 @@ class StringSplitter
       block: block
     )
 
-    return result if accept == true
+    return result if accept == DONE
 
     count = splits.length
 
@@ -219,7 +219,7 @@ class StringSplitter
   # the following fields:
   #
   #   - result: the array of separated strings to return from +split+ or +rsplit+
-  #     if the accept value is DONE, the caller returns this result immediately
+  #     if the accept value is DONE, the caller returns this array immediately
   #     without any further processing
   #
   #   - splits: an array of hashes containing the lhs, rhs, separator and captured
@@ -292,9 +292,11 @@ class StringSplitter
   end
 
   def match_positions(positions, action, nsplits)
+    resolve = ->(int) { int.negative? ? nsplits + 1 + int : int }
+
     positions = Array(positions).map do |position|
       if position.is_a?(Integer) && position.negative?
-        # translate negative indices to 1-based non-negative indices e.g:
+        # translate negative indices to 1-based non-negative indices, e.g:
         #
         #   ss.split("foo:bar:baz:quux", ":", at: -1)
         #
@@ -309,7 +311,21 @@ class StringSplitter
         #
         # to mysteriously match when the index/position is 0/1
 
-        nsplits + 1 + position
+        resolve[position]
+      elsif position.is_a?(Range)
+        warn "range (before): #{position.inspect}"
+
+        if position.begin.nil?
+          position = 1 .. resolve[position.end]
+        elsif position.end.nil?
+          position = resolve[position.begin] .. nsplits
+        elsif position.end < position.begin
+          position = resolve[position.end] .. resolve[position.begin]
+        end
+
+        warn "range (after): #{position.inspect}"
+
+        position
       else
         position
       end

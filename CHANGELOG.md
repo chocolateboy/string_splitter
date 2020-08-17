@@ -4,10 +4,16 @@
 
 - EOL Ruby versions (2.3 and 2.4) are no longer supported
 - rename the `remove_empty` option `remove_empty_fields`
+- rename the `exclude` option (an alias for `reject`) `except`
 
-### Fixes
+#### Fixes
 
 - correctly handle backreferences in delimiter patterns
+
+#### Features
+
+- add support for descending, negative, and infinite ranges,
+  e.g. `ss.split(str, ":", at: [..4, 4.., 3..1, -1..-3])` etc.
 
 ## 0.5.1 - 2018-07-01
 
