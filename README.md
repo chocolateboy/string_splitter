@@ -10,6 +10,8 @@
 - [SYNOPSIS](#synopsis)
 - [DESCRIPTION](#description)
 - [WHY?](#why)
+- [CAVEATS](#caveats)
+  - [Differences from String#split](#differences-from-string%23split)
 - [COMPATIBILITY](#compatibility)
 - [VERSION](#version)
 - [SEE ALSO](#see-also)
@@ -41,10 +43,9 @@ ss = StringSplitter.new
 **Same as `String#split`**
 
 ```ruby
-ss.split("foo bar baz quux")
-ss.split("foo bar baz quux", " ")
-ss.split("foo bar baz quux", /\s+/)
-# => ["foo", "bar", "baz", "quux"]
+ss.split("foo bar baz")
+ss.split("  foo bar baz  ")
+# => ["foo", "bar", "baz"]
 ```
 
 ```ruby
@@ -256,6 +257,33 @@ Or via its option shortcut:
 ```ruby
 ss.split(line, at: [1..5, 8])
 # => ["-rw-r--r--", "1", "user", "users", "87", "Jun 18 18:16", "CHANGELOG.md"]
+```
+
+# CAVEATS
+
+## Differences from String#split
+
+StringSplitter shares `String#split`'s behavior of trimming the string before
+splitting if the delimiter is omitted, e.g.:
+
+```ruby
+" foo bar baz ".split      # => ["foo", "bar", "baz"]
+ss.split(" foo bar baz ")  # => ["foo", "bar", "baz"]
+```
+
+However, unlike `String#split`, this doesn't also apply if a delimiter of `" "`
+is supplied, e.g.:
+
+```ruby
+" foo bar baz ".split(" ")     # => ["foo", "bar", "baz"]
+ss.split(" foo bar baz ", " ") # => ["", "foo", "bar", "baz", ""]
+```
+
+It also doesn't apply if a custom default-delimiter is defined:
+
+```ruby
+ss = StringSplitter.new(default_delimiter: /\s+/)
+ss.split(" foo bar baz ") # => ["", "foo", "bar", "baz", ""]
 ```
 
 # COMPATIBILITY

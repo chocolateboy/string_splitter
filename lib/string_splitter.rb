@@ -39,9 +39,7 @@ class StringSplitter
   # the delimiter is /(\W)/ and the separators are ":" and "::"
 
   ACCEPT_ALL = ->(_split) { true }
-  DONE = Object.new
-  DEFAULT_DELIMITER = /\s+/
-  NO_SPLITS = []
+  DEFAULT_DELIMITER = /\s+/.freeze
 
   Split = Value.new(:captures, :count, :index, :lhs, :rhs, :separator) do
     def position
@@ -120,7 +118,7 @@ class StringSplitter
     reject: except,
     &block
   )
-    result, splits, accept = init(
+    result, splits, count, accept = init(
       string: string,
       delimiter: delimiter,
       select: select,
@@ -128,7 +126,7 @@ class StringSplitter
       block: block
     )
 
-    count = splits.length
+    return result unless splits
 
     splits.each_with_index do |hash, index|
       split = Split.with(hash.merge({ count: count, index: index }))
@@ -156,7 +154,7 @@ class StringSplitter
     reject: except,
     &block
   )
-    result, splits, accept = init(
+    result, splits, count, accept = init(
       string: string,
       delimiter: delimiter,
       select: select,
@@ -164,11 +162,9 @@ class StringSplitter
       block: block
     )
 
-    return result if accept == DONE
+    return result unless splits
 
-    count = splits.length
-
-    splits.reverse!.each_with_index do |hash, index|
+    splits.reverse_each.with_index do |hash, index|
       split = Split.with(hash.merge({ count: count, index: index }))
       result.unshift(split.rhs) if result.empty?
 
@@ -186,6 +182,47 @@ class StringSplitter
 
   private
 
+  # initialisation common to +split+ and +rsplit+
+  #
+  # takes a hash of options passed to +split+ or +rsplit+ and returns a triple with
+  # the following fields:
+  #
+  #   - result: the array of separated strings to return from +split+ or +rsplit+.
+  #     if the splits arry is empty, the caller returns this array immediately
+  #     without any further processing
+  #
+  #   - splits: an array of hashes containing the lhs, rhs, separator and captured
+  #     separator substrings for each split
+  #
+  #   - count: the number of splits
+  #
+  #   - accept: a proc whose return value determines whether each split should be
+  #     accepted (true) or rejected (false)
+  #
+  def init(string:, delimiter:, select:, reject:, block:)
+    if delimiter.equal?(DEFAULT_DELIMITER)
+      string = string.strip
+    end
+
+    if reject
+      positions = reject
+      action = Action::REJECT
+    elsif select
+      positions = select
+      action = Action::SELECT
+    end
+
+    splits = parse(string, delimiter)
+
+    if splits.empty?
+      result = string.empty? ? [] : [string]
+      return [result]
+    end
+
+    block ||= positions ? compile(positions, action, splits.length) : ACCEPT_ALL
+    [[], splits, splits.length, block]
+  end
+
   def render(result)
     if @remove_empty_fields
       result.reject! { |it| it.is_a?(String) && it.empty? }
@@ -201,150 +238,86 @@ class StringSplitter
     end
   end
 
-  # converts the tokens returned by
+  # takes a string and a delimiter pattern (regex or string) and splits it along
+  # the delimiter, returning an array of objects (hashes) representing each split.
+  # e.g. for:
   #
-  #   string.split(delimiter)
+  #   parse.split("foo:bar:baz:quux", ":")
   #
-  # into an array of objects (hashes) representing each split. e.g. for:
-  #
-  #   ss.split("foo:bar:baz:quux", ":")
-  #
-  # it's called with:
-  #
-  #   splits_for(["foo", ":", "bar", ":", "baz", ":", "quux"], 0)
-  #
-  # and returns:
+  # we return:
   #
   #   [
   #       { lhs: "foo", rhs: "bar", separator: ":", captures: [] },
   #       { lhs: "bar", rhs: "baz", separator: ":", captures: [] },
   #       { lhs: "baz", rhs: "quux", separator: ":", captures: [] },
   #   ]
+  #
+  def parse(string, pattern)
+    result = []
+    start = 0
 
-  def splits_for(parts, ncaptures)
-    splits = []
-    rhs = nil
+    # we don't use the argument passed to the +scan+ block here because it's a
+    # string (the separator) if there are no captures, rather than an empty
+    # array. we use match.captures instead to get the array
+    string.scan(pattern) do
+      match = Regexp.last_match
+      index, after = match.offset(0)
+      separator = match[0]
 
-    until parts.empty?
-      lhs = rhs || parts.shift
-      separator = parts.shift
-      captures = parts.shift(ncaptures)
-      rhs = parts.shift
+      # ignore empty separators at the beginning and/or end of the string
+      next if separator.empty? && (index.zero? || after == string.length)
 
-      # there's no such thing as an empty field whose separator is empty, so if
-      # String#split's result ends with an empty separator, 0 or more (empty)
-      # captures and an empty field, we can safely remove them.
-      break if parts.empty? && separator.empty? && rhs.empty?
+      lhs = string.slice(start, index - start)
+      result.last[:rhs] = lhs unless result.empty?
 
-      splits << {
+      # this is correct for the last/only match, but gets updated to the next
+      # match's lhs for other matches
+      rhs = match.post_match
+
+      result << {
+        captures: match.captures,
         lhs: lhs,
         rhs: rhs,
         separator: separator,
-        captures: captures,
       }
+
+      # move the start index (the start of the lhs) to the index after the last
+      # character of the separator
+      start = after
     end
 
-    splits
+    result
   end
 
-  # takes a hash of options passed to +split+ or +rsplit+ and returns a triple with
-  # the following fields:
+  # returns a lambda which splits at (i.e. accepts or rejects splits at, depending
+  # on the action) the supplied positions
   #
-  #   - result: the array of separated strings to return from +split+ or +rsplit+
-  #     if the accept value is DONE, the caller returns this array immediately
-  #     without any further processing
+  # positions are preprocessed to support an additional feature: negative indices
+  # are translated to 1-based non-negative indices, e.g:
   #
-  #   - splits: an array of hashes containing the lhs, rhs, separator and captured
-  #     separator substrings for each split
+  #   ss.split("foo:bar:baz:quux", ":", at: -1)
   #
-  #   - accept: a proc whose return value determines whether each split should be
-  #     accepted (true) or rejected (false)
-
-  def init(string:, delimiter:, select:, reject:, block:)
-    return [[], NO_SPLITS, DONE] if string.empty?
-
-    if delimiter.is_a?(String)
-      match = string.include?(delimiter)
-      ncaptures = 0
-    elsif (match = string.match(delimiter))
-      ncaptures = match.captures.length
-    end
-
-    return [[string], NO_SPLITS, DONE] unless match
-
-    # XXX must be done *after* the include? test
-    delimiter = Regexp.quote(delimiter) if delimiter.is_a?(String)
-
-    if reject
-      positions = reject
-      action = Action::REJECT
-    elsif select
-      positions = select
-      action = Action::SELECT
-    end
-
-    delimiter = increment_backrefs(/(#{delimiter})/)
-    parts = string.split(delimiter, -1)
-    splits = splits_for(parts, ncaptures)
-    block ||= positions ? match_positions(positions, action, splits.length) : ACCEPT_ALL
-    [[], splits, block]
-  end
-
-  # increment back-references so they remain valid when the outer capture
-  # is added.
+  # translates to:
   #
-  # e.g. to split on:
+  #   ss.split("foo:bar:baz:quux", ":", at: 3)
   #
-  #   - <foo-comment> ... </foo-comment>
-  #   - <bar-comment> ... </bar-comment>
+  # and
   #
-  # etc.
+  #   ss.split("1:2:3:4:5:6:7:8:9", ":", -3..)
+  #   ss.split("1:2:3:4:5:6:7:8:9", ":", -3..)
   #
-  # before:
+  # translate to:
   #
-  #   %r|   <(\w+-comment)> [^<]* </\1>   |x
+  #   ss.split("foo:bar:baz:quux", ":", at: 6..8)
   #
-  # after:
-  #
-  #       +------- outer capture -------+
-  #       |                             |
-  #       v                             v
-  #   %r| ( <(\w+-comment)> [^<]* </\2> ) |x
-
-  def increment_backrefs(delimiter)
-    delimiter = delimiter.to_s.gsub(/\\(?:(\d+)|.)/) do
-      match = Regexp.last_match
-      match[1] ? '\\' + match[1].to_i.next.to_s : match[0]
-    end
-
-    Regexp.new(delimiter)
-  end
-
-  def match_positions(positions, action, nsplits)
-    # translate negative indices to 1-based non-negative indices, e.g:
-    #
-    #   ss.split("foo:bar:baz:quux", ":", at: -1)
-    #
-    # translates to:
-    #
-    #   ss.split("foo:bar:baz:quux", ":", at: 3)
-    #
-    # and
-    #
-    #   ss.split("1:2:3:4:5:6:7:8:9", ":", -3..)
-    #   ss.split("1:2:3:4:5:6:7:8:9", ":", -3..)
-    #
-    # translate to:
-    #
-    #   ss.split("foo:bar:baz:quux", ":", at: 6..8)
-    #
+  def compile(positions, action, nsplits)
     # XXX note: we don't use modulo, because we don't want
     # out-of-bounds indices to silently work, e.g. we don't want:
     #
     #   ss.split("foo:bar:baz:quux", ":", at: -42)
     #
     # to mysteriously match when the index/position is 0/1
-
+    #
     resolve = ->(int) { int.negative? ? nsplits + 1 + int : int }
 
     # don't use Array(...) to wrap these as we don't want to convert ranges
@@ -352,26 +325,25 @@ class StringSplitter
 
     positions = positions.map do |position|
       if position.is_a?(Integer)
-        position.negative? ? resolve[position] : position
+        resolve[position]
       elsif position.is_a?(Range)
-        if position.begin.nil?
-          position = Range.new(1, resolve[position.end], position.exclude_end?)
-        elsif position.end.nil?
-          position = Range.new(resolve[position.begin], nsplits, position.exclude_end?)
+        rbegin = position.begin
+        rend = position.end
+        rexc = position.exclude_end?
+
+        if rbegin.nil?
+          Range.new(1, resolve[rend], rexc)
+        elsif rend.nil?
+          Range.new(resolve[rbegin], nsplits, rexc)
+        elsif rbegin.negative? || rend.negative? || (rend - rbegin).negative?
+          from = resolve[rbegin]
+          to = resolve[rend]
+          to < from ? Range.new(to, from, rexc) : Range.new(from, to, rexc)
         else
-          from = resolve[position.begin]
-          to = resolve[position.end]
-
-          if to < from
-            position = Range.new(to, from, position.exclude_end?)
-          else
-            position = Range.new(from, to, position.exclude_end?)
-          end
+          position
         end
-
-        position
       elsif position.is_a?(Set)
-        position.map { |it| resolve(it) }.to_set
+        position.map { |it| resolve[it] }.to_set
       else
         position
       end
