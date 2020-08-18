@@ -1,14 +1,8 @@
 # frozen_string_literal: true
 
+require 'set'
 require 'values'
 require_relative 'string_splitter/version'
-
-# terminology: the delimiter is what we provide and the separators are what we get
-# back (if we capture them). e.g. for:
-#
-#   ss.split("foo:bar::baz", /(\W+)/)
-#
-# the delimiter is /(\W)/ and the separators are ":" and "::"
 
 # This class extends the functionality of +String#split+ by:
 #
@@ -30,10 +24,20 @@ require_relative 'string_splitter/version'
 #   - count:     the number of splits
 #   - index:     the 0-based index of the split in the array
 #   - lhs:       the string to the left of the separator (back to the previous split candidate)
-#   - position:  the 1-based index of the split in the array
+#   - position:  the 1-based index of the split in the array (alias: pos)
 #   - rhs:       the string to the right of the separator (up to the next split candidate)
+#   - rindex:    the 0-based index of the split relative to the end of the array
+#   - rposition: the 1-based index of the split relative to the end of the array (alias: rpos)
 #   - separator: the string matched by the delimiter pattern/string
+#
 class StringSplitter
+  # terminology: the delimiter is what we provide and the separators are what we get
+  # back (if we capture them). e.g. for:
+  #
+  #   ss.split("foo:bar::baz", /(\W+)/)
+  #
+  # the delimiter is /(\W)/ and the separators are ":" and "::"
+
   ACCEPT_ALL = ->(_split) { true }
   DONE = Object.new
   DEFAULT_DELIMITER = /\s+/
@@ -45,6 +49,34 @@ class StringSplitter
     end
 
     alias_method :pos, :position
+
+    # 0-based index relative to the end of the array, e.g. for 5 items:
+    #
+    #  index | rindex
+    #  ------|-------
+    #    0   |   4
+    #    1   |   3
+    #    2   |   2
+    #    3   |   1
+    #    4   |   0
+    def rindex
+      count - position
+    end
+
+    # 1-based position relative to the end of the array, e.g. for 5 items:
+    #
+    #   position | rposition
+    #  ----------|----------
+    #      1     |    5
+    #      2     |    4
+    #      3     |    3
+    #      4     |    2
+    #      5     |    1
+    def rposition
+      count + 1 - position
+    end
+
+    alias_method :rpos, :rposition
   end
 
   # simulate an enum. the value is returned by the case statement
@@ -99,7 +131,7 @@ class StringSplitter
     count = splits.length
 
     splits.each_with_index do |hash, index|
-      split = Split.with(hash.merge({ index: index, count: count }))
+      split = Split.with(hash.merge({ count: count, index: index }))
       result << split.lhs if result.empty?
 
       if accept.call(split)
@@ -137,7 +169,7 @@ class StringSplitter
     count = splits.length
 
     splits.reverse!.each_with_index do |hash, index|
-      split = Split.with(hash.merge({ index: index, count: count }))
+      split = Split.with(hash.merge({ count: count, index: index }))
       result.unshift(split.rhs) if result.empty?
 
       if accept.call(split)
@@ -159,13 +191,13 @@ class StringSplitter
       result.reject! { |it| it.is_a?(String) && it.empty? }
     end
 
-    if @include_captures
-      result.flat_map do |value|
-        next [value] unless value.is_a?(Array)
-        @spread_captures ? value : [value]
-      end
-    else
-      result.reject! { |it| it.is_a?(Array) }
+    unless @include_captures
+      return result.reject! { |it| it.is_a?(Array) }
+    end
+
+    result.flat_map do |value|
+      next [value] unless value.is_a?(Array) && @spread_captures
+      @spread_captures == :compact ? value.compact : value
     end
   end
 
@@ -243,13 +275,10 @@ class StringSplitter
     # XXX must be done *after* the include? test
     delimiter = Regexp.quote(delimiter) if delimiter.is_a?(String)
 
-    select = Array(select)
-    reject = Array(reject)
-
-    if !reject.empty?
+    if reject
       positions = reject
       action = Action::REJECT
-    elsif !select.empty?
+    elsif select
       positions = select
       action = Action::SELECT
     end
@@ -292,47 +321,62 @@ class StringSplitter
   end
 
   def match_positions(positions, action, nsplits)
+    # translate negative indices to 1-based non-negative indices, e.g:
+    #
+    #   ss.split("foo:bar:baz:quux", ":", at: -1)
+    #
+    # translates to:
+    #
+    #   ss.split("foo:bar:baz:quux", ":", at: 3)
+    #
+    # and
+    #
+    #   ss.split("1:2:3:4:5:6:7:8:9", ":", -3..)
+    #   ss.split("1:2:3:4:5:6:7:8:9", ":", -3..)
+    #
+    # translate to:
+    #
+    #   ss.split("foo:bar:baz:quux", ":", at: 6..8)
+    #
+    # XXX note: we don't use modulo, because we don't want
+    # out-of-bounds indices to silently work, e.g. we don't want:
+    #
+    #   ss.split("foo:bar:baz:quux", ":", at: -42)
+    #
+    # to mysteriously match when the index/position is 0/1
+
     resolve = ->(int) { int.negative? ? nsplits + 1 + int : int }
 
-    positions = Array(positions).map do |position|
-      if position.is_a?(Integer) && position.negative?
-        # translate negative indices to 1-based non-negative indices, e.g:
-        #
-        #   ss.split("foo:bar:baz:quux", ":", at: -1)
-        #
-        # translates to:
-        #
-        #   ss.split("foo:bar:baz:quux", ":", at: 3)
-        #
-        # XXX note: we don't use modulo, because we don't want
-        # out-of-bounds indices to silently work, e.g. we don't want:
-        #
-        #   ss.split("foo:bar:baz:quux", ":", at: -42)
-        #
-        # to mysteriously match when the index/position is 0/1
+    # don't use Array(...) to wrap these as we don't want to convert ranges
+    positions = positions.is_a?(Array) ? positions : [positions]
 
-        resolve[position]
+    positions = positions.map do |position|
+      if position.is_a?(Integer)
+        position.negative? ? resolve[position] : position
       elsif position.is_a?(Range)
-        warn "range (before): #{position.inspect}"
-
         if position.begin.nil?
-          position = 1 .. resolve[position.end]
+          position = Range.new(1, resolve[position.end], position.exclude_end?)
         elsif position.end.nil?
-          position = resolve[position.begin] .. nsplits
-        elsif position.end < position.begin
-          position = resolve[position.end] .. resolve[position.begin]
+          position = Range.new(resolve[position.begin], nsplits, position.exclude_end?)
+        else
+          from = resolve[position.begin]
+          to = resolve[position.end]
+
+          if to < from
+            position = Range.new(to, from, position.exclude_end?)
+          else
+            position = Range.new(from, to, position.exclude_end?)
+          end
         end
 
-        warn "range (after): #{position.inspect}"
-
         position
+      elsif position.is_a?(Set)
+        position.map { |it| resolve(it) }.to_set
       else
         position
       end
     end
 
-    lambda do |split|
-      case split.position when *positions then action else !action end
-    end
+    ->(split) { case split.position when *positions then action else !action end }
   end
 end

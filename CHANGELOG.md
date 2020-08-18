@@ -1,6 +1,6 @@
 ## 0.6.0 - TBD
 
-### Breaking Changes
+#### Breaking Changes
 
 - EOL Ruby versions (2.3 and 2.4) are no longer supported
 - rename the `remove_empty` option `remove_empty_fields`
@@ -27,7 +27,7 @@
 
 ## 0.4.0 - 2018-06-24
 
-### Breaking Changes
+#### Breaking Changes
 
 - remove the `offset` alias for `split.index`
 
@@ -38,25 +38,25 @@
 
 ## 0.3.0 - 2018-06-23
 
-### Breaking Changes
+#### Breaking Changes
 
 - rename the `default_separator` option `default_delimiter`
 
 ## 0.2.0 - 2018-06-22
 
-### Breaking Changes
+#### Breaking Changes
 
 - make `index` (AKA `offset`) 0-based and add `position` (AKA `pos`) as the
   1-based accessor
 
 ## 0.1.0 - 2018-06-22
 
-### Breaking Changes
+#### Breaking Changes
 
 - the block now takes a single `split` object with an `index` accessor, rather
   than seperate `index` and `split` arguments
 
-### Features
+#### Features
 
 - add support for negative indices in the value supplied to the `at` option
 - add a `count` field to the split object containing the total number of splits
