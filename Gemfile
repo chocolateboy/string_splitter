@@ -2,8 +2,9 @@
 
 source 'https://rubygems.org'
 
-# force HTTPS: http://bundler.io/v1.14/git.html#security
-git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
+group :development do
+  gem 'rubocop', '~> 0.89' unless ENV['CI']
+end
 
-# pull in dependencies from the string_splitter.gemspec
-gemspec
+# pull in runtime and test dependencies from string_splitter.gemspec
+gemspec development_group: :test

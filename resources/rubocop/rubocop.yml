@@ -3,7 +3,7 @@
 inherit_from: default.yml
 
 AllCops:
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 2.3
 
 inherit_mode:
   merge:
