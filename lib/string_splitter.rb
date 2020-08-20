@@ -2,6 +2,7 @@
 
 require 'set'
 require 'values'
+
 require_relative 'string_splitter/version'
 
 # This class extends the functionality of +String#split+ by:
@@ -16,9 +17,9 @@ require_relative 'string_splitter/version'
 # These enhancements allow splits to handle many cases that otherwise require bigger
 # guns, e.g. regex matching or parsing.
 #
-# Implementation-wise, we effectively use the built-in +String#split+ method as a
-# tokenizer, and parse the resulting tokens into an array of Split objects with the
-# following fields:
+# Implementation-wise, we split the string with a scanner which works in a similar
+# way to +String#split+ and parse the resulting tokens into an array of Split objects
+# with the following fields:
 #
 #   - captures:  separator substrings captured by parentheses in the delimiter pattern
 #   - count:     the number of splits
@@ -40,6 +41,7 @@ class StringSplitter
 
   ACCEPT_ALL = ->(_split) { true }
   DEFAULT_DELIMITER = /\s+/.freeze
+  REMOVE = [].freeze
 
   Split = Value.new(:captures, :count, :index, :lhs, :rhs, :separator) do
     def position
@@ -184,7 +186,7 @@ class StringSplitter
 
   # initialisation common to +split+ and +rsplit+
   #
-  # takes a hash of options passed to +split+ or +rsplit+ and returns a triple with
+  # takes a hash of options passed to +split+ or +rsplit+ and returns a tuple with
   # the following fields:
   #
   #   - result: the array of separated strings to return from +split+ or +rsplit+.
@@ -223,18 +225,25 @@ class StringSplitter
     [[], splits, splits.length, block]
   end
 
-  def render(result)
-    if @remove_empty_fields
-      result.reject! { |it| it.is_a?(String) && it.empty? }
-    end
-
-    unless @include_captures
-      return result.reject! { |it| it.is_a?(Array) }
-    end
-
-    result.flat_map do |value|
-      next [value] unless value.is_a?(Array) && @spread_captures
-      @spread_captures == :compact ? value.compact : value
+  def render(values)
+    values.flat_map do |value|
+      if value.is_a?(String)
+        value.empty? && @remove_empty_fields ? REMOVE : [value]
+      elsif @include_captures
+        if @spread_captures
+          @spread_captures == :compact ? value.compact : value
+        elsif value.empty?
+          # we expose non-captures (string delimiters or regexps with no
+          # captures) as empty arrays inside the block, so the type is
+          # consistent, but it doesn't make sense to keep them in the
+          # result
+          REMOVE
+        else
+          [value]
+        end
+      else
+        REMOVE
+      end
     end
   end
 
@@ -252,14 +261,14 @@ class StringSplitter
   #       { lhs: "baz", rhs: "quux", separator: ":", captures: [] },
   #   ]
   #
-  def parse(string, pattern)
+  def parse(string, delimiter)
     result = []
     start = 0
 
     # we don't use the argument passed to the +scan+ block here because it's a
     # string (the separator) if there are no captures, rather than an empty
     # array. we use match.captures instead to get the array
-    string.scan(pattern) do
+    string.scan(delimiter) do
       match = Regexp.last_match
       index, after = match.offset(0)
       separator = match[0]
@@ -281,8 +290,8 @@ class StringSplitter
         separator: separator,
       }
 
-      # move the start index (the start of the lhs) to the index after the last
-      # character of the separator
+      # move the start index (the start of the next lhs) to the index after the
+      # last character of the separator
       start = after
     end
 
@@ -310,7 +319,7 @@ class StringSplitter
   #
   #   ss.split("foo:bar:baz:quux", ":", at: 6..8)
   #
-  def compile(positions, action, nsplits)
+  def compile(positions, action, count)
     # XXX note: we don't use modulo, because we don't want
     # out-of-bounds indices to silently work, e.g. we don't want:
     #
@@ -318,7 +327,7 @@ class StringSplitter
     #
     # to mysteriously match when the index/position is 0/1
     #
-    resolve = ->(int) { int.negative? ? nsplits + 1 + int : int }
+    resolve = ->(int) { int.negative? ? count + 1 + int : int }
 
     # don't use Array(...) to wrap these as we don't want to convert ranges
     positions = positions.is_a?(Array) ? positions : [positions]
@@ -334,7 +343,7 @@ class StringSplitter
         if rbegin.nil?
           Range.new(1, resolve[rend], rexc)
         elsif rend.nil?
-          Range.new(resolve[rbegin], nsplits, rexc)
+          Range.new(resolve[rbegin], count, rexc)
         elsif rbegin.negative? || rend.negative? || (rend - rbegin).negative?
           from = resolve[rbegin]
           to = resolve[rend]
