@@ -3,18 +3,26 @@
 inherit_from: default.yml
 
 AllCops:
-  TargetRubyVersion: 2.3
+  # XXX we currently test against 2.3 but Rubocop 0.89 only supports 2.4+
+  TargetRubyVersion: 2.4
+  Include:
+    - 'Rakefile'
+  Exclude:
+    - 'resources/**/*'
+
+# don't complain about the Gemspec's minimum tested ruby version (2.3) not
+# matching 2.4, which is required by RuboCop 0.89 (see above)
+Gemspec/RequiredRubyVersion:
+  Enabled: false
 
 inherit_mode:
   merge:
     - Include
     - Exclude
 
-AllCops:
-  Include:
-    - 'Rakefile'
+Style/Documentation:
   Exclude:
-    - 'resources/**/*'
+    - 'lib/string_splitter/**/*.rb'
 
 Style/Semicolon:
   Exclude:

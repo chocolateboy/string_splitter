@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 require 'set'
-require 'values'
 
+require_relative 'string_splitter/split'
 require_relative 'string_splitter/version'
 
 # This class extends the functionality of +String#split+ by:
@@ -17,9 +17,10 @@ require_relative 'string_splitter/version'
 # These enhancements allow splits to handle many cases that otherwise require bigger
 # guns, e.g. regex matching or parsing.
 #
-# Implementation-wise, we split the string with a scanner which works in a similar
-# way to +String#split+ and parse the resulting tokens into an array of Split objects
-# with the following fields:
+# Implementation-wise, we split the string either with String#split, or with a custom
+# scanner if the delimiter may contain captures (since String#split doesn't handle
+# them correctly) and parse the resulting tokens into an array of Split objects with
+# the following attributes:
 #
 #   - captures:  separator substrings captured by parentheses in the delimiter pattern
 #   - count:     the number of splits
@@ -42,42 +43,6 @@ class StringSplitter
   ACCEPT_ALL = ->(_split) { true }
   DEFAULT_DELIMITER = /\s+/.freeze
   REMOVE = [].freeze
-
-  Split = Value.new(:captures, :count, :index, :lhs, :rhs, :separator) do
-    def position
-      index + 1
-    end
-
-    alias_method :pos, :position
-
-    # 0-based index relative to the end of the array, e.g. for 5 items:
-    #
-    #  index | rindex
-    #  ------|-------
-    #    0   |   4
-    #    1   |   3
-    #    2   |   2
-    #    3   |   1
-    #    4   |   0
-    def rindex
-      count - position
-    end
-
-    # 1-based position relative to the end of the array, e.g. for 5 items:
-    #
-    #   position | rposition
-    #  ----------|----------
-    #      1     |    5
-    #      2     |    4
-    #      3     |    3
-    #      4     |    2
-    #      5     |    1
-    def rposition
-      count + 1 - position
-    end
-
-    alias_method :rpos, :rposition
-  end
 
   # simulate an enum. the value is returned by the case statement
   # in the generated block if the positions match
@@ -130,9 +95,10 @@ class StringSplitter
 
     return result unless splits
 
-    splits.each_with_index do |hash, index|
-      split = Split.with(hash.merge({ count: count, index: index }))
-      result << split.lhs if result.empty?
+    result << splits.first.lhs
+
+    splits.each_with_index do |split, index|
+      split.update!(count: count, index: index)
 
       if accept.call(split)
         result << split.captures << split.rhs
@@ -166,9 +132,10 @@ class StringSplitter
 
     return result unless splits
 
-    splits.reverse_each.with_index do |hash, index|
-      split = Split.with(hash.merge({ count: count, index: index }))
-      result.unshift(split.rhs) if result.empty?
+    result.unshift(splits.last.rhs)
+
+    splits.reverse_each.with_index do |split, index|
+      split.update!(count: count, index: index)
 
       if accept.call(split)
         # [lhs + captures] + result
@@ -190,7 +157,7 @@ class StringSplitter
   # the following fields:
   #
   #   - result: the array of separated strings to return from +split+ or +rsplit+.
-  #     if the splits arry is empty, the caller returns this array immediately
+  #     if the splits array is empty, the caller returns this array immediately
   #     without any further processing
   #
   #   - splits: an array of hashes containing the lhs, rhs, separator and captured
@@ -202,23 +169,76 @@ class StringSplitter
   #     accepted (true) or rejected (false)
   #
   def init(string:, delimiter:, select:, reject:, block:)
-    if reject
-      positions = reject
-      action = Action::REJECT
-    elsif select
-      positions = select
-      action = Action::SELECT
+    return [[]] if string.empty?
+
+    unless block
+      if reject
+        positions = reject
+        action = Action::REJECT
+      elsif select
+        positions = select
+        action = Action::SELECT
+      else
+        block = ACCEPT_ALL
+      end
     end
 
-    splits = parse(string, delimiter)
+    # use String#split if we can
+    #
+    # NOTE +reject!+ is no faster than +reject+ on MRI and significantly slower
+    # on TruffleRuby
 
-    if splits.empty?
-      result = string.empty? ? [] : [string]
+    if delimiter.is_a?(String)
+      limit = -1
+
+      if delimiter == ' '
+        delimiter = / / # don't trim
+      elsif delimiter.empty?
+        limit = 0 # remove the trailing empty string
+      end
+
+      result = string.split(delimiter, limit)
+
+      return [result] if result.length == 1 # delimiter not found: no splits
+
+      if block == ACCEPT_ALL # return the (2 or more) fields
+        result = result.reject(&:empty?) if @remove_empty_fields
+        return [result]
+      end
+
+      splits = []
+
+      result.each_cons(2) do |lhs, rhs| # 2 or more fields
+        splits << Split.new(
+          captures: [],
+          lhs: lhs,
+          rhs: rhs,
+          separator: delimiter
+        )
+      end
+    elsif delimiter == DEFAULT_DELIMITER && block == ACCEPT_ALL
+      # non-empty separators so -1 is safe
+
+      if @remove_empty_fields
+        result = []
+        string.split(delimiter, -1) do |field|
+          result << field unless it.empty?
+        end
+      else
+        result = string.split(delimiter, -1)
+      end
+
       return [result]
+    else
+      splits = parse(string, delimiter)
     end
 
-    block ||= positions ? compile(positions, action, splits.length) : ACCEPT_ALL
-    [[], splits, splits.length, block]
+    count = splits.length
+
+    return [[string]] if count.zero?
+
+    block ||= compile(positions, action, count)
+    [[], splits, count, block]
   end
 
   def render(values)
@@ -227,6 +247,7 @@ class StringSplitter
         value.empty? && @remove_empty_fields ? REMOVE : [value]
       elsif @include_captures
         if @spread_captures
+          # TODO make sure compact can return a Capture
           @spread_captures == :compact ? value.compact : value
         elsif value.empty?
           # we expose non-captures (string delimiters or regexps with no
@@ -247,7 +268,7 @@ class StringSplitter
   # the delimiter, returning an array of objects (hashes) representing each split.
   # e.g. for:
   #
-  #   parse.split("foo:bar:baz:quux", ":")
+  #   parse("foo:bar:baz:quux", ":")
   #
   # we return:
   #
@@ -258,6 +279,7 @@ class StringSplitter
   #   ]
   #
   def parse(string, delimiter)
+    # has_names = delimiter.is_a?(Regexp) && !delimiter.names.empty?
     result = []
     start = 0
 
@@ -273,21 +295,23 @@ class StringSplitter
       next if separator.empty? && (index.zero? || after == string.length)
 
       lhs = string.slice(start, index - start)
-      result.last[:rhs] = lhs unless result.empty?
+      result.last.rhs = lhs unless result.empty?
 
       # this is correct for the last/only match, but gets updated to the next
       # match's lhs for other matches
       rhs = match.post_match
 
-      result << {
+      # captures = (has_names ? Captures.new(match) : match.captures)
+
+      result << Split.new(
         captures: match.captures,
         lhs: lhs,
         rhs: rhs,
-        separator: separator,
-      }
+        separator: separator
+      )
 
-      # move the start index (the start of the next lhs) to the index after the
-      # last character of the separator
+      # advance the start index (the start of the next lhs) to the position
+      # after the last character of the separator
       start = after
     end
 
@@ -297,8 +321,8 @@ class StringSplitter
   # returns a lambda which splits at (i.e. accepts or rejects splits at, depending
   # on the action) the supplied positions
   #
-  # positions are preprocessed to support additional features: negative
-  # ranges, infinite ranges, and descending ranges, e.g.:
+  # positions are preprocessed to support negative indices, infinite ranges, and
+  # descending ranges, e.g.:
   #
   #   ss.split("foo:bar:baz:quux", ":", at: -1)
   #
@@ -309,9 +333,8 @@ class StringSplitter
   # and
   #
   #   ss.split("1:2:3:4:5:6:7:8:9", ":", -3..)
-  #   ss.split("1:2:3:4:5:6:7:8:9", ":", -3..)
   #
-  # translate to:
+  # translates to:
   #
   #   ss.split("foo:bar:baz:quux", ":", at: 6..8)
   #

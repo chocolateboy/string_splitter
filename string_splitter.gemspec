@@ -24,8 +24,6 @@ Gem::Specification.new do |spec|
     'source_code_uri'   => 'https://github.com/chocolateboy/string_splitter',
   }
 
-  spec.add_runtime_dependency 'values', '~> 1.8'
-
   spec.add_development_dependency 'bundler', '~> 2.1'
   spec.add_development_dependency 'minitest', '~> 5.0'
   spec.add_development_dependency 'minitest-power_assert', '~> 0.3'

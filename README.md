@@ -11,7 +11,7 @@
 - [DESCRIPTION](#description)
 - [WHY?](#why)
 - [CAVEATS](#caveats)
-  - [Differences from String#split](#differences-from-string%23split)
+  - [Differences from String#split](#differences-from-stringsplit)
 - [COMPATIBILITY](#compatibility)
 - [VERSION](#version)
 - [SEE ALSO](#see-also)
@@ -130,7 +130,7 @@ end
 Many languages have built-in `split` functions/methods for strings. They behave
 similarly (notwithstanding the occasional
 [surprise](https://chriszetter.com/blog/2017/10/29/splitting-strings/)), and
-handle a few common cases e.g.:
+handle a few common cases, e.g.:
 
 * limiting the number of splits
 * including the separator(s) in the results
@@ -140,7 +140,7 @@ But, because the API is squeezed into two overloaded parameters (the delimiter
 and the limit), achieving the desired results can be tricky. For instance,
 while `String#split` removes empty trailing fields (by default), it provides no
 way to remove *all* empty fields. Likewise, the cramped API means there's no
-way to e.g. combine a limit (positive integer) with the option to preserve
+way to, e.g., combine a limit (positive integer) with the option to preserve
 empty fields (negative integer), or use backreferences in a delimiter pattern
 without including its captured subexpressions in the result.
 
@@ -192,7 +192,7 @@ to a regex or a full-blown parser.
 As an example, the nominally unstructured output of many Unix commands is often
 formatted in a way that's tantalizingly close to being
 [machine-readable](https://en.wikipedia.org/wiki/Delimiter-separated_values),
-apart from a few pesky exceptions e.g.:
+apart from a few pesky exceptions, e.g.:
 
 ```bash
 $ ls -l
@@ -205,7 +205,7 @@ drwxr-xr-x 3 user users 4096 Jun 19 22:56 lib
 ```
 
 These lines can *almost* be parsed into an array of fields by splitting them on
-whitespace. The exception is the date (columns 6-8) i.e.:
+whitespace. The exception is the date (columns 6-8), i.e.:
 
 ```ruby
 line = "-rw-r--r-- 1 user users   87 Jun 18 18:16 CHANGELOG.md"
@@ -224,7 +224,7 @@ instead of:
 ["-rw-r--r--", "1", "user", "users", "87", "Jun 18 18:16", "CHANGELOG.md"]
 ```
 
-One way to work around this is to parse the whole line e.g.:
+One way to work around this is to parse the whole line, e.g.:
 
 ```ruby
 line.match(/^(\S+) \s+ (\d+) \s+ (\S+) \s+ (\S+) \s+ (\d+) \s+ (\S+ \s+ \d+ \s+ \S+) \s+ (.+)$/x)
@@ -232,7 +232,7 @@ line.match(/^(\S+) \s+ (\d+) \s+ (\S+) \s+ (\S+) \s+ (\d+) \s+ (\S+ \s+ \d+ \s+ 
 
 But that requires us to specify *everything*. What we really want is a version
 of `split` which allows us to veto splitting for the 6th and 7th delimiters
-(and to stop after the 8th delimiter) i.e. control over which splits are
+(and to stop after the 8th delimiter), i.e. control over which splits are
 accepted, rather than being restricted to the single, baked-in strategy
 provided by the `limit` parameter.
 
@@ -258,7 +258,7 @@ ss.split(line, at: [1..5, 8])
 ## Differences from String#split
 
 Unlike `String#split`, StringSplitter doesn't trim the string before splitting
-(with `String#strip`) if the delimiter is omitted or a single space, e.g.:
+if the delimiter is omitted or a single space, e.g.:
 
 ```ruby
 " foo bar baz ".split          # => ["foo", "bar", "baz"]

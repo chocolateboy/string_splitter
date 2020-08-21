@@ -18,6 +18,6 @@ task :console do
 end
 
 # FIXME this runs after the release!
-task :release => %i[rubocop test]
+task :release => %i[lint test]
 
 task :default => :test
