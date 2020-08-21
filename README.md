@@ -44,17 +44,14 @@ ss = StringSplitter.new
 
 ```ruby
 ss.split("foo bar baz")
-ss.split("  foo bar baz  ")
+ss.split("foo bar baz", " ")
+ss.split("foo bar baz", /\s+/)
 # => ["foo", "bar", "baz"]
-```
 
-```ruby
 ss.split("foo", "")
 ss.split("foo", //)
 # => ["f", "o", "o"]
-```
 
-```ruby
 ss.split("", "...")
 ss.split("", /.../)
 # => []
@@ -100,18 +97,12 @@ ss.rsplit("1:2:3:4:5:6:7:8:9", ":", at: [1..3, 5])
 **Split with negative, descending, and infinite ranges**
 
 ```ruby
-ss.split("1:2:3:4:5:6:7:8:9", ":", at: 4...)
-ss.split("1:2:3:4:5:6:7:8:9", ":", at: [4...])
-# => ["1:2:3:4", "5", "6", "7", "8:9"]
-```
-
-```ruby
 ss.split("1:2:3:4:5:6:7:8:9", ":", at: ..-3)
-ss.split("1:2:3:4:5:6:7:8:9", ":", at: [..-3])
 # => ["1", "2", "3", "4", "5", "6", "7:8:9"]
-```
 
-```ruby
+ss.split("1:2:3:4:5:6:7:8:9", ":", at: 4...)
+# => ["1:2:3:4", "5", "6", "7", "8:9"]
+
 ss.split("1:2:3:4:5:6:7:8:9", ":", at: [1, 5..3, -2..])
 # => ["1", "2:3", "4", "5", "6:7", "8", "9"]
 ```
@@ -182,12 +173,15 @@ end
 # => ["foo", "bar:baz", "quux"]
 ```
 
-As a shortcut, the common case of splitting on delimiters at one or more
-positions is supported by an option:
+As a shortcut, the common case of splitting (or not splitting) at one or more
+positions is supported by dedicated options:
 
 ```ruby
-ss.split("foo:bar:baz:quux", ":", at: [1, -1])
+ss.split("foo:bar:baz:quux", ":", select: [1, -1])
 # => ["foo", "bar:baz", "quux"]
+
+ss.split("foo:bar:baz:quux", ":", reject: [1, -1])
+# => ["foo:bar", "baz:quux"]
 ```
 
 # WHY?
@@ -263,27 +257,36 @@ ss.split(line, at: [1..5, 8])
 
 ## Differences from String#split
 
-StringSplitter shares `String#split`'s behavior of trimming the string before
-splitting if the delimiter is omitted, e.g.:
+Unlike `String#split`, StringSplitter doesn't trim the string before splitting
+(with `String#strip`) if the delimiter is omitted or a single space, e.g.:
 
 ```ruby
-" foo bar baz ".split      # => ["foo", "bar", "baz"]
-ss.split(" foo bar baz ")  # => ["foo", "bar", "baz"]
-```
-
-However, unlike `String#split`, this doesn't also apply if a delimiter of `" "`
-is supplied, e.g.:
-
-```ruby
+" foo bar baz ".split          # => ["foo", "bar", "baz"]
 " foo bar baz ".split(" ")     # => ["foo", "bar", "baz"]
+
+ss.split(" foo bar baz ")      # => ["", "foo", "bar", "baz", ""]
 ss.split(" foo bar baz ", " ") # => ["", "foo", "bar", "baz", ""]
 ```
 
-It also doesn't apply if a custom default-delimiter is defined:
+`String#split` omits the `nil` values of unmatched optional captures:
 
 ```ruby
-ss = StringSplitter.new(default_delimiter: /\s+/)
-ss.split(" foo bar baz ") # => ["", "foo", "bar", "baz", ""]
+"foo:bar:baz".scan(/(:)|(-)/)  # => [[":", nil], [":", nil]]
+"foo:bar:baz".split(/(:)|(-)/) # => ["foo", ":", "bar", ":", "baz"]
+```
+
+StringSplitter preserves them by default (if `include_captures` is true, as it
+is by default), though they can be omitted from spread captures by passing
+`:compact` as the value of the `spread_captures` option:
+
+```ruby
+s1 = StringSplitter.new(spread_captures: true)
+s2 = StringSplitter.new(spread_captures: false)
+s3 = StringSplitter.new(spread_captures: :compact)
+
+s1.split("foo:bar:baz", /(:)|(-)/) # => ["foo", ":", nil, "bar", ":", nil, "baz"]
+s2.split("foo:bar:baz", /(:)|(-)/) # => ["foo", [":", nil], "bar", [":", nil], "baz"]
+s3.split("foo:bar:baz", /(:)|(-)/) # => ["foo", ":", "bar", ":", "baz"]
 ```
 
 # COMPATIBILITY

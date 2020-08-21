@@ -202,10 +202,6 @@ class StringSplitter
   #     accepted (true) or rejected (false)
   #
   def init(string:, delimiter:, select:, reject:, block:)
-    if delimiter.equal?(DEFAULT_DELIMITER)
-      string = string.strip
-    end
-
     if reject
       positions = reject
       action = Action::REJECT
@@ -301,8 +297,8 @@ class StringSplitter
   # returns a lambda which splits at (i.e. accepts or rejects splits at, depending
   # on the action) the supplied positions
   #
-  # positions are preprocessed to support an additional feature: negative indices
-  # are translated to 1-based non-negative indices, e.g:
+  # positions are preprocessed to support additional features: negative
+  # ranges, infinite ranges, and descending ranges, e.g.:
   #
   #   ss.split("foo:bar:baz:quux", ":", at: -1)
   #

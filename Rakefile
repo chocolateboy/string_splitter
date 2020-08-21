@@ -14,9 +14,7 @@ end
 
 desc 'Open an IRB console with the gem loaded'
 task :console do
-  Bundler.with_original_env do
-    ruby './resources/bin/console.rb'
-  end
+  ruby './resources/bin/console.rb'
 end
 
 # FIXME this runs after the release!

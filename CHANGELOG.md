@@ -1,21 +1,28 @@
+## 0.7.0 - TBD
+
+#### Breaking Changes
+
+- `String#split` incompatibility: we no longer trim the string (with
+  `String#strip`) before splitting if the delimiter is omitted
+
 ## 0.6.0 - 2020-08-20
 
 #### Breaking Changes
 
 - `ss.split(str, " ")` is no longer treated the same as `ss.split(str)` i.e.
-  unlike Ruby's `String#split` (but like Crystal's), the former no longer
-  strips the string before splitting
+  unlike Ruby's `String#split`, the former no longer strips the string before
+  splitting
 - rename the `remove_empty` option `remove_empty_fields`
 - rename the `exclude` option `except` (alias for `reject`)
-
-#### Fixes
-
-- correctly handle backreferences in delimiter patterns
 
 #### Features
 
 - add support for descending, negative, and infinite ranges,
   e.g. `ss.split(str, ":", at: [..4, 4..., 3..1, -1..-3])` etc.
+
+#### Fixes
+
+- correctly handle backreferences in delimiter patterns
 
 ## 0.5.1 - 2018-07-01
 
@@ -25,14 +32,14 @@
 
 ## 0.5.0 - 2018-06-26
 
-#### Fixes
-
-- don't treat string delimiters as patterns
-
 #### Features
 
 - add a `reject`/`exclude` option which rejects splits at the specified positions
 - add a `select` alias for `at`
+
+#### Fixes
+
+- don't treat string delimiters as patterns
 
 ## 0.4.0 - 2018-06-24
 
@@ -65,7 +72,7 @@
 #### Breaking Changes
 
 - the block now takes a single `split` object with an `index` accessor, rather
-  than seperate `index` and `split` arguments
+  than separate `index` and `split` arguments
 
 #### Features
 
