@@ -297,7 +297,7 @@ currently, Ruby 2.5 and above.
 
 # VERSION
 
-0.6.0
+0.7.0
 
 # SEE ALSO
 
