@@ -1,9 +1,9 @@
-## 0.7.1 - TBD
+## 0.7.1 - 2020-08-22
 
 #### Changes
 
 - performance improvements
-  - use `String#split` where possible
+  - delegate to `String#split` where possible
   - use a regular class for Split rather than values.rb
   - create Split objects directly rather than allocating intermediate hashes
 
