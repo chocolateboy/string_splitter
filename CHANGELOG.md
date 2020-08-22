@@ -1,3 +1,9 @@
+## 0.7.2 - TBD
+
+#### Fixes
+
+  - fix/test default delimiter + `remove_empty_fields`
+
 ## 0.7.1 - 2020-08-22
 
 #### Changes

@@ -4,10 +4,20 @@ require_relative 'test_helper'
 
 # confirm that the :remove_empty_fields option removes empty fields
 
-describe 'remove_empty' do
+describe 'remove_empty_fields' do
   s1 = StringSplitter.new # default: remove_empty_fields: false
   s2 = StringSplitter.new(remove_empty_fields: false) # same as 1 but explicit
   s3 = StringSplitter.new(remove_empty_fields: true)
+
+  it 'works with the default delimiter' do
+    ss = StringSplitter.new(remove_empty_fields: true)
+
+    result = ss.split(' foo bar baz quux ')
+    assert { result == %w[foo bar baz quux] }
+
+    result = ss.rsplit(' foo bar baz quux ')
+    assert { result == %w[foo bar baz quux] }
+  end
 
   it 'removes leading empty fields' do
     string = ':foo:bar:baz:quux'

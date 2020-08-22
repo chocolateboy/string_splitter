@@ -6,8 +6,8 @@ require_relative 'test_helper'
 # is empty: https://github.com/chocolateboy/string_splitter/issues/1
 
 describe 'remove the trailing empty field' do
-  s1 = StringSplitter.new(remove_empty: false, include_captures: false)
-  s2 = StringSplitter.new(remove_empty: false, include_captures: true)
+  s1 = StringSplitter.new(remove_empty_fields: false, include_captures: false)
+  s2 = StringSplitter.new(remove_empty_fields: false, include_captures: true)
   string = 'foobar'
 
   test 'empty delimiter string' do

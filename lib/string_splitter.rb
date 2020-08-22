@@ -219,15 +219,24 @@ class StringSplitter
     elsif delimiter == DEFAULT_DELIMITER && block == ACCEPT_ALL
       # non-empty separators so -1 is safe
 
-      if @remove_empty_fields
-        result = []
-        string.split(delimiter, -1) do |field|
-          result << field unless it.empty?
-        end
-      else
-        result = string.split(delimiter, -1)
-      end
+      # XXX String#split with block was introduced in Ruby 2.6:
+      #
+      # - https://rubyreferences.github.io/rubychanges/2.6.html#stringsplit-with-block
+      #
+      # rather than sniffing, we'll just use the compatible version for now
+      #
+      # if @remove_empty_fields
+      #     result = []
+      #
+      #     string.split(delimiter, -1) do |field|
+      #         result << field unless field.empty?
+      #     end
+      # else
+      #     result = string.split(delimiter, -1)
+      # end
 
+      result = string.split(delimiter, -1)
+      result = result.reject(&:empty?) if @remove_empty_fields
       return [result]
     else
       splits = parse(string, delimiter)

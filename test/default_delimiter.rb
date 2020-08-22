@@ -26,6 +26,22 @@ def assert_common(ss)
 end
 
 describe 'default_delimiter' do
+  test 'no override' do
+    ss = StringSplitter.new
+
+    result = ss.split('foo bar baz')
+    assert { result == %w[foo bar baz] }
+
+    result = ss.split(' foo bar baz ')
+    assert { result == ['', 'foo', 'bar', 'baz', ''] }
+
+    result = ss.rsplit('foo bar baz')
+    assert { result == %w[foo bar baz] }
+
+    result = ss.rsplit(' foo bar baz ')
+    assert { result == ['', 'foo', 'bar', 'baz', ''] }
+  end
+
   test 'empty string' do
     ss = StringSplitter.new(default_delimiter: '')
 
