@@ -90,8 +90,8 @@ ss.split("1:2:3:4:5:6", ":", reject: [1, -1])
 **Split from the right**
 
 ```ruby
-ss.rsplit("1:2:3:4:5:6:7:8:9", ":", at: [1..3, 5])
-# => ["1:2:3:4", "5:6", "7", "8", "9"]
+ss.rsplit("1:2:3:4:5:6:7:8:9", ":", at: [1..3, -1])
+# => ["1", "2:3:4:5:6", "7", "8", "9"]
 ```
 
 **Split with negative, descending, and infinite ranges**

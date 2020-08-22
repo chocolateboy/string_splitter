@@ -4,6 +4,7 @@ class StringSplitter
   class Split
     attr_reader :captures, :count, :index, :lhs, :position, :rhs, :separator
     attr_writer :rhs
+
     alias pos position
 
     def initialize(captures:, lhs:, rhs:, separator:)

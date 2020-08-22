@@ -19,7 +19,7 @@ require_relative 'string_splitter/version'
 #
 # Implementation-wise, we split the string either with String#split, or with a custom
 # scanner if the delimiter may contain captures (since String#split doesn't handle
-# them correctly) and parse the resulting tokens into an array of Split objects with
+# them correctly), and parse the resulting tokens into an array of Split objects with
 # the following attributes:
 #
 #   - captures:  separator substrings captured by parentheses in the delimiter pattern
@@ -160,8 +160,8 @@ class StringSplitter
   #     if the splits array is empty, the caller returns this array immediately
   #     without any further processing
   #
-  #   - splits: an array of hashes containing the lhs, rhs, separator and captured
-  #     separator substrings for each split
+  #   - splits: an array of Split objects exposing the lhs, rhs, separator and
+  #     captured separator substrings for each split
   #
   #   - count: the number of splits
   #
@@ -274,7 +274,7 @@ class StringSplitter
   end
 
   # takes a string and a delimiter pattern (regex or string) and splits it along
-  # the delimiter, returning an array of objects (hashes) representing each split.
+  # the delimiter, returning an array of objects representing each split.
   # e.g. for:
   #
   #   parse("foo:bar:baz:quux", ":")
@@ -282,14 +282,14 @@ class StringSplitter
   # we return:
   #
   #   [
-  #       { lhs: "foo", rhs: "bar", separator: ":", captures: [] },
-  #       { lhs: "bar", rhs: "baz", separator: ":", captures: [] },
-  #       { lhs: "baz", rhs: "quux", separator: ":", captures: [] },
+  #       Split.new(lhs: "foo", rhs: "bar",  separator: ":", captures: []),
+  #       Split.new(lhs: "bar", rhs: "baz",  separator: ":", captures: []),
+  #       Split.new(lhs: "baz", rhs: "quux", separator: ":", captures: []),
   #   ]
   #
   def parse(string, delimiter)
     # has_names = delimiter.is_a?(Regexp) && !delimiter.names.empty?
-    result = []
+    splits = []
     start = 0
 
     # we don't use the argument passed to the +scan+ block here because it's a
@@ -304,15 +304,15 @@ class StringSplitter
       next if separator.empty? && (index.zero? || after == string.length)
 
       lhs = string.slice(start, index - start)
-      result.last.rhs = lhs unless result.empty?
+      splits.last.rhs = lhs unless splits.empty?
 
       # this is correct for the last/only match, but gets updated to the next
       # match's lhs for other matches
       rhs = match.post_match
 
-      # captures = (has_names ? Captures.new(match) : match.captures)
+      # captures = has_names ? Captures.new(match) : match.captures
 
-      result << Split.new(
+      splits << Split.new(
         captures: match.captures,
         lhs: lhs,
         rhs: rhs,
@@ -324,7 +324,7 @@ class StringSplitter
       start = after
     end
 
-    result
+    splits
   end
 
   # returns a lambda which splits at (i.e. accepts or rejects splits at, depending
@@ -341,11 +341,11 @@ class StringSplitter
   #
   # and
   #
-  #   ss.split("1:2:3:4:5:6:7:8:9", ":", -3..)
+  #   ss.split("1:2:3:4:5:6:7:8:9", ":", at: -3..)
   #
   # translates to:
   #
-  #   ss.split("foo:bar:baz:quux", ":", at: 6..8)
+  #   ss.split("1:2:3:4:5:6:7:8:9", ":", at: 6..8)
   #
   def compile(positions, action, count)
     # XXX note: we don't use modulo, because we don't want
