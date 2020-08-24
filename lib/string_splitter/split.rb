@@ -6,7 +6,7 @@ class StringSplitter
     # expose it to blocks
     #
     # idea based on a suggestion here (as an alternative to a `friend` modifier):
-    # https://bugs.ruby-lang.org/issues/12962#note-5
+    # https://bugs.ruby-lang.org/issues/12962#note-4
     module Refinements
       refine Split do
         def update!(count:, index:)
