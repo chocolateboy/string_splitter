@@ -2,6 +2,22 @@
 
 class StringSplitter
   class Split
+    # expose the +update!+ method as a refinement to StringSplitter but don't
+    # expose it to blocks
+    #
+    # idea based on a suggestion here (as an alternative to a `friend` modifier):
+    # https://bugs.ruby-lang.org/issues/12962#note-5
+    module Refinements
+      refine Split do
+        def update!(count:, index:)
+          @count = count
+          @index = index
+          @position = index + 1
+          freeze
+        end
+      end
+    end
+
     attr_reader :captures, :count, :index, :lhs, :position, :rhs, :separator
     attr_writer :rhs
 
@@ -41,12 +57,5 @@ class StringSplitter
     end
 
     alias rpos rposition
-
-    def update!(count:, index:)
-      @count = count
-      @index = index
-      @position = index + 1
-      freeze
-    end
   end
 end

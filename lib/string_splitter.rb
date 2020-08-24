@@ -40,6 +40,9 @@ class StringSplitter
   #
   # the delimiter is /(\W)/ and the separators are ":" and "::"
 
+  # pull in the StringSplitter::Split#update! method
+  using Split::Refinements
+
   ACCEPT_ALL = ->(_split) { true }
   DEFAULT_DELIMITER = /\s+/.freeze
   REMOVE = [].freeze

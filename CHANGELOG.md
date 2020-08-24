@@ -1,8 +1,14 @@
+## 0.7.3 - TBD
+
+#### Changes
+
+- avoid exposing an internal Split method inside blocks
+
 ## 0.7.2 - 2020-08-22
 
 #### Fixes
 
-  - fix/test default delimiter + `remove_empty_fields`
+- fix/test default delimiter + `remove_empty_fields`
 
 ## 0.7.1 - 2020-08-22
 
